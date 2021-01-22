@@ -1,5 +1,6 @@
 package com.hotel.reservation.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.DynamicUpdate;
 
 import javax.persistence.*;
@@ -15,6 +16,7 @@ public class Orders {
     private Long id;
 
     @Column(updatable = false, nullable = false)
+    @JsonIgnore
     private String uuid;
 
     @ManyToOne

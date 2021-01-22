@@ -2,8 +2,8 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Orders;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.order.exception.OrderCanNotBeAddedException;
 import com.hotel.reservation.exception.order.exception.OrderNotFoundException;
+import com.hotel.reservation.exception.order.exception.OrderPlacedInPastException;
 import com.hotel.reservation.exception.room.exception.RoomIsBusyException;
 import com.hotel.reservation.exception.room.exception.RoomLabelAlreadyExistsException;
 import com.hotel.reservation.exception.room.exception.RoomNotFoundException;
@@ -53,9 +53,9 @@ public class RoomService {
 
     public String deleteRoomById(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
-        Optional<List<Orders>> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
+        List<Orders> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
 
-        if (allOrdersByRoom.get().isEmpty()) {
+        if (allOrdersByRoom.isEmpty() ) {
             roomRepository.deleteById(id);
             return "Student has been deleted";
         } else {
@@ -81,21 +81,34 @@ public class RoomService {
 
     public Orders saveOrder(Long id, Orders orders) {
         Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
-        Optional<List<Orders>> timeAvailableByRoomId = orderRepository.isTimeAvailableByRoomId(room, orders.getPeriodBegin(), orders.getPeriodEnd(), LocalDate.now());
+        List<Orders> timeAvailableByRoomId = orderRepository.isTimeAvailableByRoomId(room, orders.getPeriodBegin(), orders.getPeriodEnd());
 
-        if (timeAvailableByRoomId.get().isEmpty()) {
+        if (timeAvailableByRoomId.isEmpty()) {
+            int difference = orders.getPeriodBegin().compareTo(LocalDate.now());
+            boolean moreThanCurrentDate = difference >= 0;
             orders.setRoom(room);
-            return orderRepository.save(orders);
+            if (moreThanCurrentDate) {
+                return orderRepository.save(orders);
+            } else {
+                throw new OrderPlacedInPastException();
+            }
         } else {
-            throw new OrderCanNotBeAddedException();
+            throw new RoomIsBusyException();
         }
+
+
     }
 
 
     public List<Orders> getOrdersByRoomId(Long id) {
         Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
 
-        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now()).orElseThrow(OrderNotFoundException::new);
+        List<Orders> allByRoomAndPeriod = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
+        if (allByRoomAndPeriod.isEmpty()) {
+            throw new OrderNotFoundException();
+        } else {
+            return allByRoomAndPeriod;
+        }
     }
 
     public void deleteOrdersByRoomId(Long id) {
