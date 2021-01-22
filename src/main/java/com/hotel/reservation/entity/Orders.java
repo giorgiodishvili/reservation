@@ -8,11 +8,11 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-@DynamicUpdate
+//@DynamicUpdate
 public class Orders {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(updatable = false, nullable = false)

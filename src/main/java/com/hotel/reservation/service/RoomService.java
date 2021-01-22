@@ -2,12 +2,12 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Orders;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.order.exception.OrderNotFoundException;
-import com.hotel.reservation.exception.order.exception.OrderPlacedInPastException;
-import com.hotel.reservation.exception.room.exception.RoomIsBusyException;
-import com.hotel.reservation.exception.room.exception.RoomLabelAlreadyExistsException;
-import com.hotel.reservation.exception.room.exception.RoomNotFoundException;
-import com.hotel.reservation.exception.room.type.exception.RoomTypeNotFoundException;
+import com.hotel.reservation.exception.order.OrderNotFoundException;
+import com.hotel.reservation.exception.order.OrderPlacedInPastException;
+import com.hotel.reservation.exception.room.RoomIsBusyException;
+import com.hotel.reservation.exception.room.RoomLabelAlreadyExistsException;
+import com.hotel.reservation.exception.room.RoomNotFoundException;
+import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
@@ -21,66 +21,71 @@ import java.util.Optional;
 @Service
 public class RoomService {
 
-    private final RoomRepository roomRepository;
+    private final RoomRepository roomRepo;
     private final OrderRepository orderRepository;
     private final RoomTypeRepository roomTypeRepository;
 
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, OrderRepository orderRepository, RoomTypeRepository roomTypeRepository) {
-        this.roomRepository = roomRepository;
+    public RoomService(RoomRepository roomRepo, OrderRepository orderRepository, RoomTypeRepository roomTypeRepository) {
+        this.roomRepo = roomRepo;
         this.orderRepository = orderRepository;
         this.roomTypeRepository = roomTypeRepository;
     }
 
-    public List<Room> getRooms() {
-        return roomRepository.findAll();
+    public Iterable<Room> getRooms() {
+        return roomRepo.findAll();
     }
 
     public Room getRoomById(Long id) {
-        return roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
+        return roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
     }
 
     public Room saveRoom(Room room) {
         roomTypeRepository.findByLabelOrId(room.getRoomType().getLabel(), room.getRoomType().getId()).orElseThrow(RoomTypeNotFoundException::new);
-        Optional<Room> byLabel = roomRepository.findByLabel(room.getLabel());
+        Optional<Room> byLabel = roomRepo.findByLabel(room.getLabel());
         if (byLabel.isEmpty()) {
-            return roomRepository.save(room);
+            return roomRepo.save(room);
         } else {
             throw new RoomLabelAlreadyExistsException();
         }
     }
 
     public String deleteRoomById(Long id) {
-        Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
+        Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
         List<Orders> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
 
-        if (allOrdersByRoom.isEmpty() ) {
-            roomRepository.deleteById(id);
-            return "Student has been deleted";
-        } else {
+        if (!allOrdersByRoom.isEmpty()) {
             throw new RoomIsBusyException();
         }
+
+        roomRepo.deleteById(id);
+        return "Student has been deleted";
     }
 
+    /**
+     * @param id
+     * @param room
+     * @return
+     * @throws RoomNotFoundException           if..
+     * @throws RoomLabelAlreadyExistsException if..
+     */
     public Room updateRoomById(Long id, Room room) {
-        roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
-        Optional<Room> byLabel = roomRepository.findByLabel(room.getLabel());
-        room.setId(id);
-        if (byLabel.isEmpty() || (byLabel.get().getId().equals(id))) {
+        roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
 
-            return roomRepository.save(room);
-        } else {
+        if (roomRepo.existsByLabelAndIdIsNot(room.getLabel(), id)) {
             throw new RoomLabelAlreadyExistsException();
         }
+        room.setId(id);
+        return roomRepo.save(room);
     }
 
     public void deleteAllRooms() {
-        roomRepository.deleteAll();
+        roomRepo.deleteAll();
     }
 
     public Orders saveOrder(Long id, Orders orders) {
-        Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
+        Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
         List<Orders> timeAvailableByRoomId = orderRepository.isTimeAvailableByRoomId(room, orders.getPeriodBegin(), orders.getPeriodEnd());
 
         if (timeAvailableByRoomId.isEmpty()) {
@@ -95,13 +100,11 @@ public class RoomService {
         } else {
             throw new RoomIsBusyException();
         }
-
-
     }
 
 
     public List<Orders> getOrdersByRoomId(Long id) {
-        Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
+        Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
 
         List<Orders> allByRoomAndPeriod = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
         if (allByRoomAndPeriod.isEmpty()) {
@@ -112,7 +115,7 @@ public class RoomService {
     }
 
     public void deleteOrdersByRoomId(Long id) {
-        Room room = roomRepository.findById(id).orElseThrow(RoomNotFoundException::new);
+        Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
 
         orderRepository.deleteByRoom(room);
     }

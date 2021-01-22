@@ -6,7 +6,9 @@ import com.hotel.reservation.service.RoomTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping(value = "/room-type")
@@ -36,7 +38,10 @@ public class RoomTypeController {
     }
 
     @PostMapping("/")
-    public RoomType saveRoom(@RequestBody RoomType roomType) {
+    public RoomType saveRoom(@RequestBody @Valid RoomType roomType) {
+        if (Objects.nonNull(roomType.getId()) && 0L != roomType.getId()) {
+            throw new RuntimeException("Room type id must be null or zero");
+        }
         return roomTypeService.saveRoomType(roomType);
     }
 

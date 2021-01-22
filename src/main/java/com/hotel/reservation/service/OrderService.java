@@ -2,8 +2,8 @@ package com.hotel.reservation.service;
 
 
 import com.hotel.reservation.entity.Orders;
-import com.hotel.reservation.exception.order.exception.OrderNotFoundException;
-import com.hotel.reservation.exception.room.exception.RoomNotFoundException;
+import com.hotel.reservation.exception.order.OrderNotFoundException;
+import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
@@ -47,8 +47,6 @@ public class OrderService {
         Orders orderById = getOrderById(id);
         orders.setId(id);
         return saveOrder(orders);
-
-
     }
 
     public String deleteOrderById(Long id) {

@@ -2,10 +2,9 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
-import com.hotel.reservation.exception.room.exception.RoomNotFoundException;
-import com.hotel.reservation.exception.room.type.exception.RoomTypeIsUsedException;
-import com.hotel.reservation.exception.room.type.exception.RoomTypeLabelAlreadyExistsException;
-import com.hotel.reservation.exception.room.type.exception.RoomTypeNotFoundException;
+import com.hotel.reservation.exception.type.RoomTypeIsUsedException;
+import com.hotel.reservation.exception.type.RoomTypeLabelAlreadyExistsException;
+import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
@@ -53,15 +52,13 @@ public class RoomTypeService {
 
     public String deleteRoomTypeById(Long id) {
         RoomType roomType = roomTypeRepository.findById(id).orElseThrow(RoomTypeNotFoundException::new);
-        Optional<List<Room>> allByRoomType = roomRepository.findAllByRoomType(roomType);
-        if (allByRoomType.get().isEmpty()) {
+        List<Room> allByRoomType = roomRepository.findAllByRoomType(roomType);
+        if (allByRoomType.isEmpty()) {
             roomTypeRepository.deleteById(id);
             return "Room Type has been deleted";
         } else {
             throw new RoomTypeIsUsedException();
         }
-
-
     }
 
 
@@ -88,7 +85,7 @@ public class RoomTypeService {
 
     public List<Room> getRoomsByTypeId(Long id) {
         RoomType roomType = roomTypeRepository.findById(id).orElseThrow(RoomTypeNotFoundException::new);
-        return roomRepository.findAllByRoomType(roomType).orElseThrow(RoomNotFoundException::new);
+        return roomRepository.findAllByRoomType(roomType);
     }
 
     //TODO add deleteRoomsByTypeID

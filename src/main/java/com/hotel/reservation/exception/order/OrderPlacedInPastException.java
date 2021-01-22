@@ -1,4 +1,4 @@
-package com.hotel.reservation.exception.order.exception;
+package com.hotel.reservation.exception.order;
 
 
 import org.springframework.http.HttpStatus;
