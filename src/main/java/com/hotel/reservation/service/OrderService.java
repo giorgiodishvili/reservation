@@ -7,6 +7,7 @@ import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class OrderService {
 
     private final RoomTypeRepository roomTypeRepository;
@@ -39,7 +41,7 @@ public class OrderService {
 
     public Orders saveOrder(Orders orders) {
         Long id = Optional.ofNullable(orders.getRoom().getId()).orElseThrow(RoomNotFoundException::new);
-        System.out.println(id);
+        log.debug("room id is :{}", id);
         return roomService.saveOrder(id, orders);
     }
 

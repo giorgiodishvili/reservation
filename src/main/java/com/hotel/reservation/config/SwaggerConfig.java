@@ -6,6 +6,5 @@ import springfox.documentation.oas.annotations.EnableOpenApi;
 @Configuration
 @EnableOpenApi
 public class SwaggerConfig {
-
-
+//TODO
 }

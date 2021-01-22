@@ -1,14 +1,15 @@
 package com.hotel.reservation.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.DynamicUpdate;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
-//@DynamicUpdate
 public class Orders {
 
     @Id
@@ -30,26 +31,6 @@ public class Orders {
     private LocalDate periodEnd;
 
     private String description;
-
-    public Orders() {
-    }
-
-    public Orders(Long id, String uuid, Room room, LocalDate periodBegin, LocalDate periodEnd, String description) {
-        this.id = id;
-        this.uuid = uuid;
-        this.room = room;
-        this.periodBegin = periodBegin;
-        this.periodEnd = periodEnd;
-        this.description = description;
-    }
-
-    public Orders(String uuid, Room room, LocalDate periodBegin, LocalDate periodEnd, String description) {
-        this.uuid = uuid;
-        this.room = room;
-        this.periodBegin = periodBegin;
-        this.periodEnd = periodEnd;
-        this.description = description;
-    }
 
     @PrePersist
     public void initializeUUID() {
