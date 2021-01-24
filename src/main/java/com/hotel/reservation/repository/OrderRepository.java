@@ -18,6 +18,7 @@ public interface OrderRepository extends CrudRepository<Orders, Long> {
             , LocalDate startDate
             , LocalDate endDate
     );
+
     void deleteByRoom(@Param("room") Room room);
 
 }

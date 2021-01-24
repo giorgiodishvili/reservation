@@ -30,7 +30,7 @@ public class RoomType {
     @Column(name = "DESCRIPTION")
     private String description;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomType" , fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomType", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Room> rooms;
 

@@ -4,9 +4,9 @@ import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
 import com.hotel.reservation.exception.room.RoomIdMustBeEqualToPassedID;
 import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
+import com.hotel.reservation.exception.type.RoomTypeIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.type.RoomTypeIsUsedException;
 import com.hotel.reservation.exception.type.RoomTypeLabelAlreadyExistsException;
-import com.hotel.reservation.exception.type.RoomTypeIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
@@ -56,39 +56,37 @@ public class RoomTypeService {
         log.info("RoomType is :{}", roomType);
         log.debug("Room Type Label Exists :{}", existsByLabel);
 
-        if(existsByLabel){
+        if (existsByLabel) {
 
             log.error("Room Type Label Already Exists");
             throw new RoomTypeLabelAlreadyExistsException();
         }
 
-            return roomTypeRepository.save(roomType);
+        return roomTypeRepository.save(roomType);
     }
-
 
     public RoomType deleteRoomTypeById(Long id) {
         RoomType roomType = roomTypeRepository.findById(id).orElseThrow(RoomTypeNotFoundException::new);
         boolean roomExistsByRoomType = roomRepository.existsByRoomType(roomType);
 
-        log.debug("Room exists by Room Type :{}",roomExistsByRoomType );
+        log.debug("Room exists by Room Type :{}", roomExistsByRoomType);
         if (!roomExistsByRoomType) {
             log.error("Room Type is in Use");
             throw new RoomTypeIsUsedException();
         }
 
-        log.info("Room id deleted :{}",id);
+        log.info("Room id deleted :{}", id);
 
         roomTypeRepository.deleteById(id);
         return roomType;
     }
-
 
     public RoomType updateRoomTypeById(Long roomTypeId, RoomType roomType) {
         getRoomTypeById(roomTypeId);
         Optional<RoomType> byLabel = roomTypeRepository.findByLabel(roomType.getLabel());
         roomType.setId(roomTypeId);
 
-        if(!roomType.getId().equals(roomTypeId)){
+        if (!roomType.getId().equals(roomTypeId)) {
             log.error("Passed Id is not equal to ROOM TYPE ID");
             throw new RoomIdMustBeEqualToPassedID();
         }

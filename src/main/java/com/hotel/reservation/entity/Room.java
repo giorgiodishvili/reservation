@@ -27,7 +27,7 @@ public class Room {
     private String label;
 
     @ManyToOne
-    @JoinColumn(name = "ROOM_TYPE_ID",nullable = false)
+    @JoinColumn(name = "ROOM_TYPE_ID", nullable = false)
     @NotNull(message = "Room Type should not be empty")
     private RoomType roomType;
 

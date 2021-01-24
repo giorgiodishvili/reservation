@@ -22,19 +22,19 @@ public class Orders {
     @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     private Long id;
 
-    @Column(name = "UUID",updatable = false, nullable = false)
+    @Column(name = "UUID", updatable = false, nullable = false)
     private String uuid;
 
     @ManyToOne
-    @JoinColumn(name = "ROOM_ID",nullable = false)
+    @JoinColumn(name = "ROOM_ID", nullable = false)
     @NotNull(message = "Room mustn't be null")
     private Room room;
 
-    @Column(name = "PERIOD_BEGIN",nullable = false)
+    @Column(name = "PERIOD_BEGIN", nullable = false)
     @NotNull(message = "Begin Period mustn't be null")
     private LocalDate periodBegin;
 
-    @Column(name = "PERIOD_END",nullable = false)
+    @Column(name = "PERIOD_END", nullable = false)
     @NotNull(message = "End Period mustn't be null")
     private LocalDate periodEnd;
 
