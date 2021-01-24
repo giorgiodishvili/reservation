@@ -2,7 +2,6 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
-import com.hotel.reservation.exception.room.RoomIdMustBeEqualToPassedID;
 import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.type.RoomTypeIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.type.RoomTypeIsUsedException;
@@ -85,11 +84,6 @@ public class RoomTypeService {
         getRoomTypeById(roomTypeId);
         Optional<RoomType> byLabel = roomTypeRepository.findByLabel(roomType.getLabel());
         roomType.setId(roomTypeId);
-
-        if (!roomType.getId().equals(roomTypeId)) {
-            log.error("Passed Id is not equal to ROOM TYPE ID");
-            throw new RoomIdMustBeEqualToPassedID();
-        }
 
         if (byLabel.isEmpty() || (byLabel.get().getId().equals(roomTypeId))) {
 

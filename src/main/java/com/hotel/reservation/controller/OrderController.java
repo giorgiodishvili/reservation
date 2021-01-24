@@ -5,6 +5,8 @@ import com.hotel.reservation.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping("/orders")
@@ -17,38 +19,37 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    @GetMapping("/")
-    public Iterable<Orders> getRooms() {
+    @GetMapping
+    public Iterable<Orders> getAllOrders() {
         return orderService.getAllOrders();
     }
 
     @GetMapping("/{orderId}")
-    public Orders getRoomById(@PathVariable("orderId") Long id) {
-        return orderService.getOrderById(id);
+    public Orders getOrderById(@PathVariable("orderId") Long orderId) {
+        return orderService.getOrderById(orderId);
     }
 
-//    @GetMapping("/{roomId}/orders")
-//    public List<Orders> getOrders(@PathVariable("roomId") Long id) {
-//        return orderService.getOrdersByRoomId(id);
-//    }
-
-    @PostMapping("/")
-    public Orders saveRoom(@RequestBody Orders order) {
-        return orderService.saveOrder(order);
+    @GetMapping("/{label}/{uuid}")
+    public boolean checkOrder(@PathVariable("label") String label, @PathVariable("uuid") String UUID) {
+        return orderService.checkOrder(label, UUID);
     }
 
+    @PostMapping
+    public Orders createOrder(@RequestBody @Valid Orders order) {
+        return orderService.createOrder(order);
+    }
 
     @PutMapping("/{orderId}")
-    public Orders updateRoom(@PathVariable("orderId") Long id, @RequestBody Orders order) {
-        return orderService.updateOrder(id, order);
+    public Orders updateOrder(@PathVariable("orderId") Long orderId, @RequestBody @Valid Orders order) {
+        return orderService.updateOrder(orderId, order);
     }
 
     @DeleteMapping("/{orderId}")
-    public String deleteRoomById(@PathVariable("orderId") Long id) {
-        return orderService.deleteOrderById(id);
+    public Orders deleteOrderById(@PathVariable("orderId") Long orderId) {
+        return orderService.deleteOrderById(orderId);
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public void deleteAllOrders() {
         orderService.deleteAllOrders();
     }

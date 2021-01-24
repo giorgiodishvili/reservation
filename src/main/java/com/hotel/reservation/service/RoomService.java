@@ -2,9 +2,7 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Orders;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.order.OrderCanNotBeAddedException;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
-import com.hotel.reservation.exception.order.OrderPlacedInPastException;
 import com.hotel.reservation.exception.room.RoomIsBusyException;
 import com.hotel.reservation.exception.room.RoomLabelAlreadyExistsException;
 import com.hotel.reservation.exception.room.RoomNotFoundException;
@@ -27,13 +25,15 @@ public class RoomService {
     private final RoomRepository roomRepo;
     private final OrderRepository orderRepository;
     private final RoomTypeRepository roomTypeRepository;
+    private final OrderService orderService;
 
 
     @Autowired
-    public RoomService(RoomRepository roomRepo, OrderRepository orderRepository, RoomTypeRepository roomTypeRepository) {
+    public RoomService(RoomRepository roomRepo, OrderRepository orderRepository, RoomTypeRepository roomTypeRepository, OrderService orderService) {
         this.roomRepo = roomRepo;
         this.orderRepository = orderRepository;
         this.roomTypeRepository = roomTypeRepository;
+        this.orderService = orderService;
     }
 
     public Iterable<Room> getRooms() {
@@ -88,22 +88,10 @@ public class RoomService {
         roomRepo.deleteAll();
     }
 
-    public Orders saveOrder(Long id, Orders orders) {
+    public Orders saveOrder(Long id, Orders order) {
         Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
-        boolean isTimeAvailable = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(room, orders.getPeriodBegin(), orders.getPeriodEnd());
-
-        if (!isTimeAvailable) {
-            int difference = orders.getPeriodBegin().compareTo(LocalDate.now());
-            boolean moreThanCurrentDate = difference >= 0;
-            orders.setRoom(room);
-            if (moreThanCurrentDate) {
-                return orderRepository.save(orders);
-            } else {
-                throw new OrderPlacedInPastException();
-            }
-        } else {
-            throw new OrderCanNotBeAddedException();
-        }
+        order.setRoom(room);
+        return orderService.createOrder(order);
     }
 
 
@@ -122,5 +110,10 @@ public class RoomService {
         Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
 
         orderRepository.deleteByRoom(room);
+    }
+
+    public Room getRoomByLabel(String label) {
+        return roomRepo.findByLabel(label).orElseThrow(RoomNotFoundException::new);
+
     }
 }

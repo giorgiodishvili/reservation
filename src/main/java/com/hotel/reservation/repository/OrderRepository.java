@@ -21,4 +21,5 @@ public interface OrderRepository extends CrudRepository<Orders, Long> {
 
     void deleteByRoom(@Param("room") Room room);
 
+    List<Orders> findAllByRoom(Room roomByLabel);
 }
