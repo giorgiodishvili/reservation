@@ -12,6 +12,7 @@ import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class RoomService {
 
     private final RoomRepository roomRepo;
@@ -35,6 +37,7 @@ public class RoomService {
     }
 
     public Iterable<Room> getRooms() {
+        log.info("in getRooms method ");
         return roomRepo.findAll();
     }
 

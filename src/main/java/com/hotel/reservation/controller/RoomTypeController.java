@@ -3,77 +3,69 @@ package com.hotel.reservation.controller;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
 import com.hotel.reservation.service.RoomTypeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Objects;
 
 @RestController
 @RequestMapping(value = "/room-type")
+@Slf4j
 public class RoomTypeController {
 
-    private RoomTypeService roomTypeService;
+    private final RoomTypeService roomTypeService;
 
     @Autowired
     public RoomTypeController(RoomTypeService roomTypeService) {
+
         this.roomTypeService = roomTypeService;
     }
 
 
     @GetMapping
     public Iterable<RoomType> getRoomTypes() {
-        return roomTypeService.getRoomTypes();
+        log.info("in getRoomTypes controller method");
+        return roomTypeService.getAllRoomTypes();
     }
 
     @GetMapping("/{roomTypeId}")
-    public RoomType getRoomTypeById(@PathVariable("roomTypeId") Long id) {
-        return roomTypeService.getRoomTypeById(id);
+    public RoomType getRoomTypeById(@PathVariable("roomTypeId") Long roomTypeId) {
+        log.info("in getRoomTypeById controller method");
+        return roomTypeService.getRoomTypeById(roomTypeId);
     }
 
     @GetMapping("/{roomTypeId}/rooms")
-    public List<Room> getRooms(@PathVariable("roomTypeId") Long id) {
-        return roomTypeService.getRoomsByTypeId(id);
+    public List<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") Long roomTypeId) {
+        log.info("in getRoomTypeById controller method");
+        return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId);
     }
 
     @PostMapping
-    public RoomType saveRoom(@RequestBody @Valid RoomType roomType) {
-        if (Objects.nonNull(roomType.getId()) && 0L != roomType.getId()) {
-            throw new RuntimeException("Room type id must be null or zero");
-        }
-        return roomTypeService.saveRoomType(roomType);
+    public RoomType createRoomType(@RequestBody @Valid RoomType roomType) {
+        log.info("in createRoomType controller method");
+        return roomTypeService.createRoomType(roomType);
+
     }
 
 
     @PostMapping("/{roomTypeId}/rooms")
-    public Room saveOrder(@PathVariable("roomTypeId") Long id, @RequestBody Room room) {
-        return roomTypeService.saveRoomByType(id, room);
+    public Room createRoomByRoomType(@PathVariable("roomTypeId") Long roomTypeId, @RequestBody @Valid Room room) {
+        log.info("in createRoomByRoomType controller method");
+        return roomTypeService.createRoomByRoomType(roomTypeId, room);
     }
 
     @PutMapping("/{roomTypeId}")
-    public RoomType updateRoomType(@PathVariable("roomTypeId") Long id, @RequestBody RoomType roomType) {
-        return roomTypeService.updateRoomTypeById(id, roomType);
-    }
-
-    @PutMapping("/{roomTypeId}/rooms")
-    public Room updateRoom(@PathVariable("roomTypeId") Long id, @RequestBody Room room) {
-        return roomTypeService.saveRoomByType(id, room);
+    public RoomType updateRoomTypeById(@PathVariable("roomTypeId") Long roomTypeId, @RequestBody @Valid RoomType roomType) {
+        log.info("in updateRoomTypeById controller method");
+        return roomTypeService.updateRoomTypeById(roomTypeId, roomType);
     }
 
     @DeleteMapping("/{roomTypeId}")
-    public String deleteRoomTypeById(@PathVariable("roomTypeId") Long id) {
-        return roomTypeService.deleteRoomTypeById(id);
-    }
-
-    @DeleteMapping
-    public void deleteAllRoomTypes() {
-        roomTypeService.deleteAllRoomTypes();
-    }
-
-    @DeleteMapping("/{roomTypeId}/rooms")
-    public void deleteRoomsByRoomTypeId(@PathVariable("roomTypeId") Long id) {
-        roomTypeService.deleteRoomsByRoomTypeId(id);
+    public RoomType deleteRoomTypeById(@PathVariable("roomTypeId") Long roomTypeId) {
+        log.info("in deleteRoomTypeById controller method");
+        return roomTypeService.deleteRoomTypeById(roomTypeId);
     }
 
 }

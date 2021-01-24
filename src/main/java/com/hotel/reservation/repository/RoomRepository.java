@@ -11,7 +11,9 @@ import java.util.Optional;
 
 public interface RoomRepository extends CrudRepository<Room, Long> {
 
-    List<Room> findAllByRoomType(RoomType roomType);
+    boolean existsByRoomType(RoomType roomType);
+
+    List<Room> findByRoomType(RoomType roomType);
 
     Optional<Room> findByLabel(@Param("Label") String label);
 
