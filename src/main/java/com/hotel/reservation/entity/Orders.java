@@ -1,35 +1,44 @@
 package com.hotel.reservation.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
 
+@Data
 @Entity
+@Table(name = "Orders")
+@ApiModel
 public class Orders {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Orders_SEQ")
+    @SequenceGenerator(name = "Orders_SEQ", sequenceName = "Orders_ROOMS")
+    @Column(name = "ID", updatable = false)
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     private Long id;
 
-    @Column(updatable = false, nullable = false)
-    @JsonIgnore
+    @Column(name = "UUID",updatable = false, nullable = false)
     private String uuid;
 
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "ROOM_ID",nullable = false)
+    @NotNull(message = "Room mustn't be null")
     private Room room;
 
-    //    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "PERIOD_BEGIN",nullable = false)
+    @NotNull(message = "Begin Period mustn't be null")
     private LocalDate periodBegin;
 
-    //    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    @Column(name = "PERIOD_END",nullable = false)
+    @NotNull(message = "End Period mustn't be null")
     private LocalDate periodEnd;
 
+    @Column(name = "DESCRIPTION")
     private String description;
 
     @PrePersist
@@ -37,65 +46,5 @@ public class Orders {
         if (this.uuid == null) {
             this.uuid = UUID.randomUUID().toString();
         }
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String key) {
-        this.uuid = key;
-    }
-
-    public Room getRoom() {
-        return room;
-    }
-
-    public void setRoom(Room room) {
-        this.room = room;
-    }
-
-    public LocalDate getPeriodBegin() {
-        return periodBegin;
-    }
-
-    public void setPeriodBegin(LocalDate periodBegin) {
-        this.periodBegin = periodBegin;
-    }
-
-    public LocalDate getPeriodEnd() {
-        return periodEnd;
-    }
-
-    public void setPeriodEnd(LocalDate endDateTime) {
-        this.periodEnd = endDateTime;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    @Override
-    public String toString() {
-        return "Orders{" +
-                "id=" + id +
-                ", key='" + uuid + '\'' +
-//                ", room=" + room +
-                ", periodBegin=" + periodBegin +
-                ", periodEnd=" + periodEnd +
-                ", description='" + description + '\'' +
-                '}';
     }
 }

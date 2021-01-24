@@ -1,78 +1,37 @@
 package com.hotel.reservation.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.DynamicUpdate;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
+@Data
 @Entity
-@DynamicUpdate
+@Table(name = "ROOM_TYPE")
+@ApiModel
 public class RoomType {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(updatable = false)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "RoomType_SEQ")
+    @SequenceGenerator(name = "RoomType_SEQ", sequenceName = "RoomType_ROOMS")
+    @Column(name = "ID", updatable = false)
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     private Long id;
 
-    @NotNull(message = "label mustn't be null")
+    @NotNull(message = "Label mustn't be null")
+    @Column(name = "LABEL", nullable = false)
+    @NotNull
     private String label;
 
+    @Column(name = "DESCRIPTION")
     private String description;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomType")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "roomType" , fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Room> rooms;
 
-    public RoomType() {
-    }
-
-    public RoomType(Long id, String label, String description) {
-        this.id = id;
-        this.label = label;
-        this.description = description;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public void setLabel(String label) {
-        this.label = label;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Set<Room> getRooms() {
-        return rooms;
-    }
-
-    public void setRooms(Set<Room> rooms) {
-        this.rooms = rooms;
-    }
-
-    @Override
-    public String toString() {
-        return "RoomType{" +
-                "id=" + id +
-                ", label='" + label + '\'' +
-                ", description='" + description + '\'' +
-//                ", rooms=" + rooms +
-                '}';
-    }
 }

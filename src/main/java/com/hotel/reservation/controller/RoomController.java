@@ -57,7 +57,7 @@ public class RoomController {
     }
 
     @DeleteMapping("/{roomId}")
-    public String deleteRoomById(@PathVariable("roomId") Long id) {
+    public Room deleteRoomById(@PathVariable("roomId") Long id) {
         return roomService.deleteRoomById(id);
     }
 

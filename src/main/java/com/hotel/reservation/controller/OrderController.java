@@ -20,7 +20,7 @@ public class OrderController {
     }
 
     @GetMapping("/")
-    public List<Orders> getRooms() {
+    public Iterable<Orders> getRooms() {
         return orderService.getAllOrders();
     }
 

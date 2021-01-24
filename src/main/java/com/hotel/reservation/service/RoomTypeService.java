@@ -31,7 +31,7 @@ public class RoomTypeService {
         this.roomService = roomService;
     }
 
-    public List<RoomType> getRoomTypes() {
+    public Iterable<RoomType> getRoomTypes() {
         return roomTypeRepository.findAll();
     }
 

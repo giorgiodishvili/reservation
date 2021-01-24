@@ -22,8 +22,8 @@ public class RoomTypeController {
     }
 
 
-    @GetMapping("/")
-    public List<RoomType> getRoomTypes() {
+    @GetMapping
+    public Iterable<RoomType> getRoomTypes() {
         return roomTypeService.getRoomTypes();
     }
 
@@ -37,7 +37,7 @@ public class RoomTypeController {
         return roomTypeService.getRoomsByTypeId(id);
     }
 
-    @PostMapping("/")
+    @PostMapping
     public RoomType saveRoom(@RequestBody @Valid RoomType roomType) {
         if (Objects.nonNull(roomType.getId()) && 0L != roomType.getId()) {
             throw new RuntimeException("Room type id must be null or zero");
@@ -66,7 +66,7 @@ public class RoomTypeController {
         return roomTypeService.deleteRoomTypeById(id);
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public void deleteAllRoomTypes() {
         roomTypeService.deleteAllRoomTypes();
     }

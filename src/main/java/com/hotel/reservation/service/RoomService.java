@@ -51,7 +51,7 @@ public class RoomService {
         }
     }
 
-    public String deleteRoomById(Long id) {
+    public Room deleteRoomById(Long id) {
         Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
         List<Orders> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
 
@@ -60,13 +60,13 @@ public class RoomService {
         }
 
         roomRepo.deleteById(id);
-        return "Student has been deleted";
+        return room;
     }
 
     /**
      * @param id
      * @param room
-     * @return
+     * @return Room
      * @throws RoomNotFoundException           if..
      * @throws RoomLabelAlreadyExistsException if..
      */
@@ -86,9 +86,9 @@ public class RoomService {
 
     public Orders saveOrder(Long id, Orders orders) {
         Room room = roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
-        List<Orders> timeAvailableByRoomId = orderRepository.isTimeAvailableByRoomId(room, orders.getPeriodBegin(), orders.getPeriodEnd());
+        boolean isTimeAvailable = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(room, orders.getPeriodBegin(), orders.getPeriodEnd());
 
-        if (timeAvailableByRoomId.isEmpty()) {
+        if (!isTimeAvailable) {
             int difference = orders.getPeriodBegin().compareTo(LocalDate.now());
             boolean moreThanCurrentDate = difference >= 0;
             orders.setRoom(room);

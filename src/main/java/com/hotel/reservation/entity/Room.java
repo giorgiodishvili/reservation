@@ -16,38 +16,26 @@ import java.util.Set;
 public class Room {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "ROOMS_SEQ")
+    @SequenceGenerator(name = "ROOMS_SEQ", sequenceName = "SEQUENCE_ROOMS")
     @Column(name = "ID", updatable = false)
-    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     private Long id;
 
     @NotNull(message = "label mustn't be null")
-    @Column(name = "LABEL")
+    @Column(name = "LABEL", nullable = false)
     private String label;
 
     @ManyToOne
-    @JoinColumn(nullable = false)
+    @JoinColumn(name = "ROOM_TYPE_ID",nullable = false)
+    @NotNull(message = "Room Type should not be empty")
     private RoomType roomType;
 
+    @Column(name = "DESCRIPTION")
     private String description;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "room")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "room", fetch = FetchType.LAZY)
     @JsonIgnore
     private Set<Orders> orders;
 
-    public Room() {
-    }
-
-    public Room(Long id, String label, RoomType roomType, String description) {
-        this.id = id;
-        this.label = label;
-        this.roomType = roomType;
-        this.description = description;
-    }
-
-    public Room(String label, RoomType roomType, String description) {
-        this.label = label;
-        this.roomType = roomType;
-        this.description = description;
-    }
 }
