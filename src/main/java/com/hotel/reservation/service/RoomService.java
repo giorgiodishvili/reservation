@@ -2,6 +2,7 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Orders;
 import com.hotel.reservation.entity.Room;
+import com.hotel.reservation.exception.order.OrderCanNotBeAddedException;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
 import com.hotel.reservation.exception.order.OrderPlacedInPastException;
 import com.hotel.reservation.exception.room.RoomIsBusyException;
@@ -98,7 +99,7 @@ public class RoomService {
                 throw new OrderPlacedInPastException();
             }
         } else {
-            throw new RoomIsBusyException();
+            throw new OrderCanNotBeAddedException();
         }
     }
 
