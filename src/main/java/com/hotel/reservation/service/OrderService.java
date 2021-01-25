@@ -9,6 +9,7 @@ import com.hotel.reservation.exception.order.OrderPlacedInPastException;
 import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
+import com.hotel.reservation.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -19,25 +20,33 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+
+//TODO add logging
+
+
 @Service
 @Slf4j
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final RoomService roomService;
+    private final RoomRepository roomRepo;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, RoomService roomService) {
+    public OrderService(OrderRepository orderRepository,RoomRepository roomRepo) {
         this.orderRepository = orderRepository;
-        this.roomService = roomService;
+        this.roomRepo = roomRepo;
     }
 
     public Iterable<Orders> getAllOrders() {
+        log.info("In getAllOrders method");
         return orderRepository.findAll();
     }
 
     public Orders getOrderById(Long id) {
-        return orderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
+        log.info("In getOrderById method");
+        log.debug("id is :{}",id);
+
+            return orderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
     }
 
     public Orders createOrder(Orders orders) {
@@ -68,7 +77,7 @@ public class OrderService {
     }
 
     public boolean checkOrder(String label, String UUID) {
-        Room roomByLabel = roomService.getRoomByLabel(label);
+        Room roomByLabel = roomRepo.findByLabel(label).orElseThrow(RoomNotFoundException::new);
 
         List<Orders> allByRoom = orderRepository.findAllByRoom(roomByLabel);
 
@@ -84,7 +93,7 @@ public class OrderService {
     @NotNull
     private Orders saveToOrderRepo(Orders orders) {
         Long roomId = Optional.ofNullable(orders.getRoom().getId()).orElseThrow(RoomNotFoundException::new);
-        Room roomById = roomService.getRoomById(roomId);
+        Room roomById = roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
         orders.setRoom(roomById);
 
         log.debug("room roomId is :{}", roomId);

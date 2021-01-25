@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Objects;
 
 
 @RestController
@@ -37,22 +36,19 @@ public class RoomController {
         return roomService.getOrdersByRoomId(id);
     }
 
-    @PostMapping("/")
+    @PostMapping
     public Room saveRoom(@RequestBody @Valid Room room) {
-        if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
-            throw new RuntimeException("Room id must be null or zero");
-        }
-        return roomService.saveRoom(room);
+        return roomService.createRoom(room);
     }
 
 
     @PostMapping("/{roomId}/orders")
-    public Orders saveOrder(@PathVariable("roomId") Long id, @RequestBody Orders orders) {
+    public Orders saveOrder(@PathVariable("roomId") Long id, @RequestBody @Valid Orders orders) {
         return roomService.saveOrder(id, orders);
     }
 
     @PutMapping("/{roomId}")
-    public Room updateRoom(@PathVariable("roomId") Long id, @RequestBody Room room) {
+    public Room updateRoom(@PathVariable("roomId") Long id, @RequestBody @Valid Room room) {
         return roomService.updateRoomById(id, room);
     }
 
@@ -61,7 +57,7 @@ public class RoomController {
         return roomService.deleteRoomById(id);
     }
 
-    @DeleteMapping("/")
+    @DeleteMapping
     public void deleteRoomById() {
         roomService.deleteAllRooms();
     }

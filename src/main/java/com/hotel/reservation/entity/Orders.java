@@ -19,7 +19,7 @@ public class Orders {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Orders_SEQ")
     @SequenceGenerator(name = "Orders_SEQ", sequenceName = "Orders_ROOMS")
     @Column(name = "ID", updatable = false)
-    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY)
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Long id;
 
     @Column(name = "UUID", updatable = false, nullable = false)

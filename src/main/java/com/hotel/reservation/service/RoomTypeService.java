@@ -10,6 +10,7 @@ import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -43,7 +44,7 @@ public class RoomTypeService {
         return roomTypeRepository.findById(roomTypeId).orElseThrow(RoomTypeNotFoundException::new);
     }
 
-    public RoomType createRoomType(RoomType roomType) {
+    public RoomType createRoomType(@NotNull RoomType roomType) {
 
         if (Objects.nonNull(roomType.getId()) && 0L != roomType.getId()) {
             log.error("ROOM TYPE ID must be zero or null");
@@ -80,6 +81,7 @@ public class RoomTypeService {
         return roomType;
     }
 
+    //not null column-ებზე რომ მიწერია აქაც დაწერა აღარაა ხო აუცილებელი ?
     public RoomType updateRoomTypeById(Long roomTypeId, RoomType roomType) {
         getRoomTypeById(roomTypeId);
         Optional<RoomType> byLabel = roomTypeRepository.findByLabel(roomType.getLabel());
@@ -98,7 +100,7 @@ public class RoomTypeService {
 
     }
 
-    public Room createRoomByRoomType(Long roomTypeId, Room room) {
+    public Room createRoomByRoomType(Long roomTypeId, @NotNull Room room) {
 
         if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
             log.error("ROOM ID must be zero or null");
@@ -108,7 +110,7 @@ public class RoomTypeService {
         RoomType roomType = getRoomTypeById(roomTypeId);
         log.info("Room type is :{}", roomType);
         room.setRoomType(roomType);
-        return roomService.saveRoom(room);
+        return roomService.createRoom(room);
     }
 
     public List<Room> getAllRoomsByRoomTypeId(Long roomTypeId) {
