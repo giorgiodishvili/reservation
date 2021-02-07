@@ -32,9 +32,9 @@ public class OrderController {
         return orderService.getOrderById(orderId);
     }
 
-    @GetMapping("/{label}/{uuid}")
-    public boolean checkOrder(@PathVariable("label") String label, @PathVariable("uuid") String UUID) {
-        return orderService.checkOrder(label, UUID);
+    @GetMapping("/{roomLabel}/{uuid}")
+    public boolean checkOrder(@PathVariable("roomLabel") String roomLabel, @PathVariable("uuid") String UUID) {
+        return orderService.checkOrder(roomLabel, UUID);
     }
 
     @PostMapping
@@ -50,11 +50,6 @@ public class OrderController {
     @DeleteMapping("/{orderId}")
     public Orders deleteOrderById(@PathVariable("orderId") Long orderId) {
         return orderService.deleteOrderById(orderId);
-    }
-
-    @DeleteMapping
-    public void deleteAllOrders() {
-        orderService.deleteAllOrders();
     }
 
 }

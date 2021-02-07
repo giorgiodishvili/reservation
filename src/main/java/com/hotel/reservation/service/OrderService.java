@@ -97,13 +97,13 @@ public class OrderService {
     }
 
     /**
-     * @param label label of a room
+     * @param roomLabel label of a room
      * @param UUID  uuid of the order
      * @return boolean
      * @throws RoomNotFoundException if room is not found by this label
      */
-    public boolean checkOrder(String label, String UUID) {
-        Room roomByLabel = roomRepo.findByLabel(label).orElseThrow(RoomNotFoundException::new);
+    public boolean checkOrder(String roomLabel, String UUID) {
+        Room roomByLabel = roomRepo.findByLabel(roomLabel).orElseThrow(RoomNotFoundException::new);
 
         List<Orders> allByRoom = orderRepository.findAllByRoom(roomByLabel);
 
