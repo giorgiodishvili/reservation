@@ -4,9 +4,10 @@ package com.hotel.reservation.service;
 import com.hotel.reservation.entity.Orders;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.exception.order.OrderCanNotBeAddedException;
+import com.hotel.reservation.exception.order.OrderIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
 import com.hotel.reservation.exception.order.OrderPlacedInPastException;
-import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
+import com.hotel.reservation.exception.room.RoomIdNotFoundException;
 import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
@@ -32,50 +33,75 @@ public class OrderService {
     private final RoomRepository roomRepo;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository,RoomRepository roomRepo) {
+    public OrderService(OrderRepository orderRepository, RoomRepository roomRepo) {
         this.orderRepository = orderRepository;
         this.roomRepo = roomRepo;
     }
 
+    /**
+     * @return Iterable of Orders
+     */
     public Iterable<Orders> getAllOrders() {
         log.info("In getAllOrders method");
         return orderRepository.findAll();
     }
 
-    public Orders getOrderById(Long id) {
+    /**
+     * @param orderId id of an order
+     * @return Orders
+     * @throws OrderNotFoundException if orderId is not found
+     */
+    public Orders getOrderById(Long orderId) {
         log.info("In getOrderById method");
-        log.debug("id is :{}",id);
+        log.debug("id is :{}", orderId);
 
-            return orderRepository.findById(id).orElseThrow(OrderNotFoundException::new);
+        return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
     }
 
+    /**
+     * @param orders single order which should be added
+     * @return Orders
+     * @throws OrderIdMustBeZeroOrNullException if order id is not zero or null
+     */
     public Orders createOrder(Orders orders) {
 
         if (Objects.nonNull(orders.getId()) && 0L != orders.getId()) {
             log.error("Order ID must be zero or null");
-            throw new RoomIdMustBeZeroOrNullException();
+            throw new OrderIdMustBeZeroOrNullException();
         }
 
         return saveToOrderRepo(orders);
     }
 
-
-    public Orders updateOrder(Long id, Orders orders) {
-        getOrderById(id);
-        orders.setId(id);
+    /**
+     * @param orderId id of an order
+     * @param orders  updated version of a single order
+     * @return Order
+     * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
+     */
+    public Orders updateOrder(Long orderId, Orders orders) {
+        getOrderById(orderId);
+        orders.setId(orderId);
         return saveToOrderRepo(orders);
     }
 
-    public Orders deleteOrderById(Long id) {
-        Orders orderById = getOrderById(id);
-        orderRepository.deleteById(id);
+    /**
+     * @param orderId id of an order
+     * @return Orders
+     * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
+     */
+    public Orders deleteOrderById(Long orderId) {
+        Orders orderById = getOrderById(orderId);
+        orderRepository.deleteById(orderId);
         return orderById;
     }
 
-    public void deleteAllOrders() {
-        orderRepository.deleteAll();
-    }
-
+    /**
+     * @param label label of a room
+     * @param UUID  uuid of the order
+     * @return boolean
+     * @throws RoomNotFoundException if room is not found by this label
+     */
     public boolean checkOrder(String label, String UUID) {
         Room roomByLabel = roomRepo.findByLabel(label).orElseThrow(RoomNotFoundException::new);
 
@@ -90,9 +116,17 @@ public class OrderService {
         return false;
     }
 
+    /**
+     * @param orders order which should be saved
+     * @return Orders
+     * @throws RoomIdNotFoundException     if order doesn't have room id
+     * @throws RoomNotFoundException       if room doesnt exists by provided id
+     * @throws OrderCanNotBeAddedException if room is not free
+     * @throws OrderPlacedInPastException  if passed date is the in past
+     */
     @NotNull
     private Orders saveToOrderRepo(Orders orders) {
-        Long roomId = Optional.ofNullable(orders.getRoom().getId()).orElseThrow(RoomNotFoundException::new);
+        Long roomId = Optional.ofNullable(orders.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
         Room roomById = roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
         orders.setRoom(roomById);
 
@@ -100,7 +134,7 @@ public class OrderService {
         boolean isRoomBusy = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(orders.getRoom(), orders.getPeriodBegin(), orders.getPeriodEnd());
 
         if (isRoomBusy) {
-            throw new OrderCanNotBeAddedException();
+            throw new OrderCanNotBeAddedException(); //Room is busy Exception xom ar jobia ?
         }
 
         int difference = orders.getPeriodBegin().compareTo(LocalDate.now());

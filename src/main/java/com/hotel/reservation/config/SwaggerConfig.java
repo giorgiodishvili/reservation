@@ -41,12 +41,4 @@ public class SwaggerConfig {
         );
     }
 
-//    private List<ResponseMessage> getCustomizedResponseMessages(){
-//        List<ResponseMessage> responseMessages = new ArrayList<>();
-//        responseMessages.add(new ResponseMessageBuilder().code(500).message("Server has crashed!!").responseModel(new ModelRef("Error")).build());
-//        responseMessages.add(new ResponseMessageBuilder().code(403).message("You shall not pass!!").build());
-//        return responseMessages;
-//    }
-
-
 }

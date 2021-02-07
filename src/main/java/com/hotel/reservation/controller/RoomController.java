@@ -44,7 +44,7 @@ public class RoomController {
 
     @PostMapping("/{roomId}/orders")
     public Orders saveOrder(@PathVariable("roomId") Long id, @RequestBody @Valid Orders orders) {
-        return roomService.saveOrder(id, orders);
+        return roomService.createOrder(id, orders);
     }
 
     @PutMapping("/{roomId}")

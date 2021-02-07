@@ -2,7 +2,6 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Orders;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.order.OrderNotFoundException;
 import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.room.RoomIsBusyException;
 import com.hotel.reservation.exception.room.RoomLabelAlreadyExistsException;
@@ -40,16 +39,30 @@ public class RoomService {
     }
 
 
+    /**
+     * @return Iterable of Room
+     */
     public Iterable<Room> getRooms() {
         return roomRepo.findAll();
     }
 
+    /**
+     * @param roomId provided roomId
+     * @return Room
+     * @throws RoomNotFoundException if room by roomId is not found
+     */
     //ამ შემთხვევაში როგორ დავლოგო ? TRY Catch ? ორჯერ ხომ არ გამოვისვრი, არასწორი მგონია
-    public Room getRoomById(Long id) {
-        return roomRepo.findById(id).orElseThrow(RoomNotFoundException::new);
+    public Room getRoomById(Long roomId) {
+        return roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
     }
 
-
+    /**
+     * @param room provided room
+     * @return Room
+     * @throws RoomIdMustBeZeroOrNullException if room id is not zero or null
+     * @throws RoomTypeNotFoundException       if room type of specified room  is null
+     * @throws RoomLabelAlreadyExistsException if room label already exists than room cant be saved
+     */
     public Room createRoom(Room room) {
 
         if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
@@ -75,13 +88,13 @@ public class RoomService {
     }
 
     /**
-     * @param id provided id
+     * @param roomId provided id
      * @return Room
      * @throws RoomNotFoundException if label exists and as well id is not room id
      * @throws RoomIsBusyException   if Room is Busy
      */
-    public Room deleteRoomById(Long id) {
-        Room room = getRoomById(id);
+    public Room deleteRoomById(Long roomId) {
+        Room room = getRoomById(roomId);
 
         List<Orders> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
 
@@ -91,58 +104,52 @@ public class RoomService {
             throw roomIsBusyException;
         }
 
-        roomRepo.deleteById(id);
+        roomRepo.deleteById(roomId);
         return room;
     }
 
     /**
-     * @param id   provided id
-     * @param room provided Room
+     * @param roomId provided id
+     * @param room   provided Room
      * @return Room
      * @throws RoomNotFoundException           if label exists and as well id is not room id
      * @throws RoomLabelAlreadyExistsException if room label exists
      */
-    public Room updateRoomById(Long id, Room room) {
-        getRoomById(id);
+    public Room updateRoomById(Long roomId, Room room) {
+        getRoomById(roomId);
 
-        if (roomRepo.existsByLabelAndIdIsNot(room.getLabel(), id)) {
+        if (roomRepo.existsByLabelAndIdIsNot(room.getLabel(), roomId)) {
             RoomLabelAlreadyExistsException roomLabelAlreadyExistsException = new RoomLabelAlreadyExistsException();
 
             log.error("Room Label Already exists ", roomLabelAlreadyExistsException);
 
             throw roomLabelAlreadyExistsException;
         }
-        room.setId(id);
+        room.setId(roomId);
         return roomRepo.save(room);
     }
 
-    public void deleteAllRooms() {
-        roomRepo.deleteAll();
-    }
 
-    public Orders saveOrder(Long id, Orders order) {
-        Room roomById = getRoomById(id);
+    /**
+     * @param roomId provided room id
+     * @param order  provided order
+     * @return Orders
+     * @throws RoomNotFoundException if room is not found by room id
+     */
+    public Orders createOrder(Long roomId, Orders order) {
+        Room roomById = getRoomById(roomId);
         order.setRoom(roomById);
         return orderService.createOrder(order);
     }
 
-
-    public List<Orders> getOrdersByRoomId(Long id) {
-        Room roomById = getRoomById(id);
-
-        List<Orders> allByRoomAndPeriod = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
-
-        if (allByRoomAndPeriod.isEmpty()) {
-            throw new OrderNotFoundException();
-        }
-        return allByRoomAndPeriod;
-
-    }
-
-    public void deleteOrdersByRoomId(Long id) {
-        Room roomById = getRoomById(id);
-
-        orderRepository.deleteByRoom(roomById);
+    /**
+     * @param roomId provided room id
+     * @return List of orders
+     * @throws RoomNotFoundException if room is not found by room id
+     */
+    public List<Orders> getOrdersByRoomId(Long roomId) {
+        Room roomById = getRoomById(roomId);
+        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
     }
 
 }
