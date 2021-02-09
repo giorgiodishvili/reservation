@@ -70,6 +70,10 @@ public class RoomService {
             RoomIdMustBeZeroOrNullException roomIdMustBeZeroOrNullException = new RoomIdMustBeZeroOrNullException();
 
             //ასე უნდა დაილოგოს ექსეფშენები ?
+            // ჰმმ. არა გიო. აქ რაც უნდა დაწერო არის info უფრო.
+            // ექსეფშენი, ჯერ უნდა დაიჭირო, მერე რომ დალოგო.
+            // შენს მიერ ნასროლი ერორი ერორად არ უნდა დალოგო.
+            // ეგ რეალურად ერორი არაა შენთვის. მხოლოდ სხვისთვის.
             log.error("Room ID is :{}", room.getId(), roomIdMustBeZeroOrNullException);
 
             throw roomIdMustBeZeroOrNullException;
@@ -96,6 +100,7 @@ public class RoomService {
     public Room deleteRoomById(Long roomId) {
         Room room = getRoomById(roomId);
 
+        // აქ EXISTSByRoomAndPeriodEndGreaterThanEqual მეთოდი რატო არ გამოიყენე და დაატარებ ამ Order-ებს ბაზიდან?
         List<Orders> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
 
         if (!allOrdersByRoom.isEmpty()) {
@@ -103,7 +108,6 @@ public class RoomService {
             log.error("Room is Busy ", roomIsBusyException);
             throw roomIsBusyException;
         }
-
         roomRepo.deleteById(roomId);
         return room;
     }
@@ -120,7 +124,6 @@ public class RoomService {
 
         if (roomRepo.existsByLabelAndIdIsNot(room.getLabel(), roomId)) {
             RoomLabelAlreadyExistsException roomLabelAlreadyExistsException = new RoomLabelAlreadyExistsException();
-
             log.error("Room Label Already exists ", roomLabelAlreadyExistsException);
 
             throw roomLabelAlreadyExistsException;
@@ -145,7 +148,7 @@ public class RoomService {
     /**
      * @param roomId provided room id
      * @return List of orders
-     * @throws RoomNotFoundException if room is not found by room id
+     * @throws RoomNotFoundException if room is not found by <code>roomId</code>
      */
     public List<Orders> getOrdersByRoomId(Long roomId) {
         Room roomById = getRoomById(roomId);

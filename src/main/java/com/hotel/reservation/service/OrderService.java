@@ -98,7 +98,7 @@ public class OrderService {
 
     /**
      * @param roomLabel label of a room
-     * @param UUID  uuid of the order
+     * @param UUID      uuid of the order
      * @return boolean
      * @throws RoomNotFoundException if room is not found by this label
      */
@@ -107,6 +107,11 @@ public class OrderService {
 
         List<Orders> allByRoom = orderRepository.findAllByRoom(roomByLabel);
 
+        /*
+        აქ 1 მაინც order.getUuid().equals(UUID) თუ შესრულდება True უნდა დააბრუნო?
+        ეს მგონი ის თემაა, თუ ჯავშანი "ახლა" ადევს ოთახს იმის UUID უნდა იყოს გადმოცემულ პარამერტს არა?
+        და ყველა Order რომ არ არახუნო ბაზიდან, არ ჯობდა UUID-ით დაგეთრია Order? (ხომ ხვდები რომ 1 უნდა იყოს მაინც)
+         */
         for (Orders order : allByRoom) {
             if (order.getUuid().equals(UUID)) {
                 return true;
@@ -124,7 +129,9 @@ public class OrderService {
      * @throws OrderCanNotBeAddedException if room is not free
      * @throws OrderPlacedInPastException  if passed date is the in past
      */
+    // ეს @NotNull ანოტაცია რას გიგივარებს?
     @NotNull
+    // ამის სახელს ვერ ჩავწვდი. saveToOrderRepo
     private Orders saveToOrderRepo(Orders orders) {
         Long roomId = Optional.ofNullable(orders.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
         Room roomById = roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
@@ -134,16 +141,13 @@ public class OrderService {
         boolean isRoomBusy = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(orders.getRoom(), orders.getPeriodBegin(), orders.getPeriodEnd());
 
         if (isRoomBusy) {
-            throw new OrderCanNotBeAddedException(); //Room is busy Exception xom ar jobia ?
+            throw new OrderCanNotBeAddedException(); //Room is busy Exception xom ar jobia ? კი, რატომაც არა.
         }
 
         int difference = orders.getPeriodBegin().compareTo(LocalDate.now());
-        boolean moreThanCurrentDate = difference >= 0;
-
-        if (!moreThanCurrentDate) {
+        if (difference >= 0) {
             throw new OrderPlacedInPastException();
         }
-
         return orderRepository.save(orders);
     }
 }

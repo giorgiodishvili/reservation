@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
@@ -23,7 +24,8 @@ public class Room {
     private Long id;
 
     @NotNull(message = "label mustn't be null")
-    @Column(name = "LABEL", nullable = false)
+    @Column(name = "LABEL", nullable = false) // აქ თავდაცვისთვის unique = true-ს ხომ არ დაამატებდი?
+    @NotEmpty(message = "label mustn't be empty") // ჰა რას იტყვი აბა? ზედმეტი ხომ არაა?
     private String label;
 
     @ManyToOne

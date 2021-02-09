@@ -5,6 +5,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -13,6 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "Orders")
 @ApiModel
+// ამის სახელი მრავლობითში რატოა?
+// entity-ს სახელი მხოლობითში, ცხრილის სახელი მრავლობითში.
 public class Orders {
 
     @Id

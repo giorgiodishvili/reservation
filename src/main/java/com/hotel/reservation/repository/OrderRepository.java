@@ -19,6 +19,7 @@ public interface OrderRepository extends CrudRepository<Orders, Long> {
             , LocalDate endDate
     );
 
+    // გამოუყენებელი მეთოდები, კლასები, ექსეფშენები, და 1000 სხვა ხლამი წაშალო სჯობს (თუ დასრულებული გინდა დაარქვა).
     void deleteByRoom(@Param("room") Room room);
 
     List<Orders> findAllByRoom(Room roomByLabel);
