@@ -1,0 +1,26 @@
+version: "3"
+services:
+  room-reservation-service:
+    container_name: room-reservation-service
+    build:
+      context: .
+    environment:
+      datasource.host: mysql-db
+    ports:
+      - 8080:8080
+    #    env_file:
+    #      - environment.env
+    links:
+      - mysql-db
+
+  mysql-db:
+    image: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: p@$$w0rd
+      MYSQL_DATABASE: reservation
+      MYSQL_USER: username
+      MYSQL_PASSWORD: password
+    ports:
+      - 3306:3306
+    volumes:
+      - /data/room-reservation-service/mysql/:/var/lib/mysql
