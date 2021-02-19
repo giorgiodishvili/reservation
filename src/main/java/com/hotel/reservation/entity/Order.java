@@ -16,7 +16,7 @@ import java.util.UUID;
 @ApiModel
 // ამის სახელი მრავლობითში რატოა?
 // entity-ს სახელი მხოლობითში, ცხრილის სახელი მრავლობითში.
-public class Orders {
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "Orders_SEQ")

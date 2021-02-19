@@ -1,6 +1,6 @@
 package com.hotel.reservation.controller;
 
-import com.hotel.reservation.entity.Orders;
+import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +31,8 @@ public class RoomController {
         return roomService.getRoomById(id);
     }
 
-    @GetMapping("/{roomId}/orders")
-    public List<Orders> getOrders(@PathVariable("roomId") Long id) {
+    @GetMapping("/{roomId}/order")
+    public List<Order> getOrders(@PathVariable("roomId") Long id) {
         return roomService.getOrdersByRoomId(id);
     }
 
@@ -42,9 +42,9 @@ public class RoomController {
     }
 
 
-    @PostMapping("/{roomId}/orders")
-    public Orders saveOrder(@PathVariable("roomId") Long id, @RequestBody @Valid Orders orders) {
-        return roomService.createOrder(id, orders);
+    @PostMapping("/{roomId}/order")
+    public Order saveOrder(@PathVariable("roomId") Long id, @RequestBody @Valid Order order) {
+        return roomService.createOrder(id, order);
     }
 
     @PutMapping("/{roomId}")

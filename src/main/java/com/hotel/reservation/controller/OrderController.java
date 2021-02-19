@@ -1,6 +1,6 @@
 package com.hotel.reservation.controller;
 
-import com.hotel.reservation.entity.Orders;
+import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -12,7 +12,7 @@ import javax.validation.Valid;
 
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/order")
 public class OrderController {
 
     private final OrderService orderService;
@@ -23,12 +23,12 @@ public class OrderController {
     }
 
     @GetMapping
-    public Iterable<Orders> getAllOrders() {
+    public Iterable<Order> getAllOrders() {
         return orderService.getAllOrders();
     }
 
     @GetMapping("/{orderId}")
-    public Orders getOrderById(@PathVariable("orderId") Long orderId) {
+    public Order getOrderById(@PathVariable("orderId") Long orderId) {
         return orderService.getOrderById(orderId);
     }
 
@@ -38,17 +38,17 @@ public class OrderController {
     }
 
     @PostMapping
-    public Orders createOrder(@RequestBody @Valid Orders order) {
+    public Order createOrder(@RequestBody @Valid Order order) {
         return orderService.createOrder(order);
     }
 
     @PutMapping("/{orderId}")
-    public Orders updateOrder(@PathVariable("orderId") Long orderId, @RequestBody @Valid Orders order) {
+    public Order updateOrder(@PathVariable("orderId") Long orderId, @RequestBody @Valid Order order) {
         return orderService.updateOrder(orderId, order);
     }
 
     @DeleteMapping("/{orderId}")
-    public Orders deleteOrderById(@PathVariable("orderId") Long orderId) {
+    public Order deleteOrderById(@PathVariable("orderId") Long orderId) {
         return orderService.deleteOrderById(orderId);
     }
 

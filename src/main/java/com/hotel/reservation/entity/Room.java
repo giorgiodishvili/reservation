@@ -38,6 +38,6 @@ public class Room {
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "room", fetch = FetchType.LAZY)
     @JsonIgnore
-    private Set<Orders> orders;
+    private Set<Order> orders;
 
 }

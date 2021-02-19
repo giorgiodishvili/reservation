@@ -9,7 +9,6 @@ import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,45 +33,48 @@ public class RoomTypeService {
     }
 
     /**
+     *
      * @return Iterable of Room Type
      */
     public Iterable<RoomType> getAllRoomTypes() {
-        log.info("in getAllRoomTypes method ");
+        log.trace("executing getAllRoomTypes");
         return roomTypeRepository.findAll();
     }
 
     /**
+     *
      * @param roomTypeId provided room type id
      * @return RoomType
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      */
     public RoomType getRoomTypeById(Long roomTypeId) {
+        log.trace("executing getRoomTypeById");
         log.debug("Room Type ID is :{}", roomTypeId);
         return roomTypeRepository.findById(roomTypeId).orElseThrow(RoomTypeNotFoundException::new);
     }
 
     /**
+     *
      * @param roomType provided room Type
      * @return RoomType
      * @throws RoomTypeIdMustBeZeroOrNullException if room type id is not zero or null
      * @throws RoomTypeLabelAlreadyExistsException if room type label already exists room type cant be added
      */
-    //not null anotacia rodis unda gamoviyeno ?
-    public RoomType createRoomType(@NotNull RoomType roomType) {
+    public RoomType createRoomType(RoomType roomType) {
+        log.trace("executing createRoomType");
 
         if (Objects.nonNull(roomType.getId()) && 0L != roomType.getId()) {
-            log.error("ROOM TYPE ID must be zero or null");
+            log.info("ROOM TYPE ID must be zero or null exception");
             throw new RoomTypeIdMustBeZeroOrNullException();
         }
 
-        boolean existsByLabel = roomTypeRepository.existsByLabel(roomType.getLabel());
+        boolean existsByLabel = roomTypeExistsByLabel(roomType.getLabel());
 
-        log.info("RoomType is :{}", roomType);
-        log.debug("Room Type Label Exists :{}", existsByLabel);
+        log.debug("RoomType is :{}", roomType);
+        log.debug("Room Type Label Exists: :{}", existsByLabel);
 
         if (existsByLabel) {
-
-            log.error("Room Type Label Already Exists");
+            log.info("Room Type Label Already Exists exception");
             throw new RoomTypeLabelAlreadyExistsException();
         }
 
@@ -80,74 +82,141 @@ public class RoomTypeService {
     }
 
     /**
+     *
      * @param roomTypeId provided room type id
      * @return RoomType
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      * @throws RoomTypeIsUsedException   if room type is used
      */
     public RoomType deleteRoomTypeById(Long roomTypeId) {
-        RoomType roomType = roomTypeRepository.findById(roomTypeId).orElseThrow(RoomTypeNotFoundException::new);
-        boolean roomExistsByRoomType = roomRepository.existsByRoomType(roomType);
+        log.trace("executing deleteRoomTypeById");
 
-        log.debug("Room exists by Room Type :{}", roomExistsByRoomType);
-        if (!roomExistsByRoomType) {
+        RoomType roomType = getRoomTypeById(roomTypeId);
+        log.debug("RoomType is :{}", roomType);
+
+        boolean roomIsPresent = roomExistsByRoomType(roomType);
+        log.debug("Room exists by Room Type :{}", roomIsPresent);
+
+        if (!roomIsPresent) {
             log.error("Room Type is in Use");
             throw new RoomTypeIsUsedException();
         }
 
-        log.info("Room id deleted :{}", roomTypeId);
-
+        log.info("Id of deleted Room: :{}", roomTypeId);
         roomTypeRepository.deleteById(roomTypeId);
+
         return roomType;
     }
 
     /**
+     *
      * @param roomTypeId provided room type id
      * @param roomType   provided roomType
      * @return RoomType
      * @throws RoomTypeNotFoundException           if room type is not found by room type id
      * @throws RoomTypeLabelAlreadyExistsException if room type label already exists room type cant be updated
      */
-    //not null column-ებზე რომ მიწერია აქაც დაწერა აღარაა ხო აუცილებელი ?
     public RoomType updateRoomTypeById(Long roomTypeId, RoomType roomType) {
-        getRoomTypeById(roomTypeId);
-        Optional<RoomType> byLabel = roomTypeRepository.findByLabel(roomType.getLabel());
+        log.trace("executing updateRoomTypeById");
+
+        if(!roomTypeExistsById(roomTypeId)){
+            throw new RoomTypeNotFoundException();
+        }
+
+        log.debug("RoomType is :{}", roomType);
+        Optional<RoomType> byLabel = findRoomTypeByLabel(roomType.getLabel());
         roomType.setId(roomTypeId);
 
-        if (byLabel.isEmpty() || (byLabel.get().getId().equals(roomTypeId))) {
-
-            log.info("Room Type updated :{}", roomType);
-
-            return roomTypeRepository.save(roomType);
-        } else {
-
-            log.error("Room Type Label Already Exists");
+        if(byLabel.isPresent() && !(byLabel.get().getId().equals(roomTypeId))){
+            log.info("Room Type Label Already Exists");
             throw new RoomTypeLabelAlreadyExistsException();
         }
+
+            log.debug("Room Type updated :{}", roomType);
+            return roomTypeRepository.save(roomType);
 
     }
 
     /**
+     *
      * @param roomTypeId provided room type if
      * @param room       provided room
      * @return Room
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      */
-    public Room createRoomByRoomType(Long roomTypeId, @NotNull Room room) {
+    public Room createRoomByRoomType(Long roomTypeId, Room room) {
+        log.trace("executing createRoomByRoomType");
+
         RoomType roomType = getRoomTypeById(roomTypeId);
-        log.info("Room type is :{}", roomType);
+        log.debug("Room type is :{}", roomType);
+
         room.setRoomType(roomType);
+        log.debug("Room is :{}", room);
+
         return roomService.createRoom(room);
     }
 
     /**
-     * @param roomTypeId provided room type if
+     *
+     * @param roomTypeId provided room type id
      * @return List of Rooms
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      */
     public List<Room> getAllRoomsByRoomTypeId(Long roomTypeId) {
+        log.trace("executing getAllRoomsByRoomTypeId");
+
         RoomType roomType = getRoomTypeById(roomTypeId);
+
+        log.debug("Room type is :{}", roomType);
         return roomRepository.findByRoomType(roomType);
+    }
+
+    /**
+     *
+     * @param roomTypeId provided room type id
+     * @return boolean
+     */
+    public boolean roomTypeExistsById(Long roomTypeId){
+        log.trace("executing getAllRoomsByRoomTypeId");
+
+        log.debug("Room Type id is :{}", roomTypeId);
+        return roomTypeRepository.existsById(roomTypeId);
+    }
+
+    /**
+     *
+     * @param roomTypeLabel provided room type label
+     * @return Optional of RoomType
+     */
+    public Optional<RoomType> findRoomTypeByLabel(String roomTypeLabel){
+        log.trace("executing findRoomTypeByLabel");
+        log.debug("Room Type label is :{}", roomTypeLabel);
+
+       return roomTypeRepository.findByLabel(roomTypeLabel);
+    }
+
+    /**
+     *
+     * @param roomTypeLabel provided room type label
+     * @return boolean
+     */
+    public boolean roomTypeExistsByLabel(String roomTypeLabel){
+        log.trace("executing roomTypeExistsByLabel");
+        log.debug("Room Type label is :{}", roomTypeLabel);
+
+        return roomTypeRepository.existsByLabel(roomTypeLabel);
+    }
+
+    /**
+     *
+     * @param roomType provided roomType
+     * @return boolean
+     */
+    public boolean roomExistsByRoomType(RoomType roomType){
+        log.trace("executing roomExistsByRoomType");
+        log.debug("Room Type is :{}", roomType);
+
+        return roomRepository.existsByRoomType(roomType);
     }
 
 }

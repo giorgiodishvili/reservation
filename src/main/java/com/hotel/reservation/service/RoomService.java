@@ -1,6 +1,6 @@
 package com.hotel.reservation.service;
 
-import com.hotel.reservation.entity.Orders;
+import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.room.RoomIsBusyException;
@@ -101,9 +101,9 @@ public class RoomService {
         Room room = getRoomById(roomId);
 
         // აქ EXISTSByRoomAndPeriodEndGreaterThanEqual მეთოდი რატო არ გამოიყენე და დაატარებ ამ Order-ებს ბაზიდან?
-        List<Orders> allOrdersByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
+        List<Order> allOrderByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
 
-        if (!allOrdersByRoom.isEmpty()) {
+        if (!allOrderByRoom.isEmpty()) {
             RoomIsBusyException roomIsBusyException = new RoomIsBusyException();
             log.error("Room is Busy ", roomIsBusyException);
             throw roomIsBusyException;
@@ -139,7 +139,7 @@ public class RoomService {
      * @return Orders
      * @throws RoomNotFoundException if room is not found by room id
      */
-    public Orders createOrder(Long roomId, Orders order) {
+    public Order createOrder(Long roomId, Order order) {
         Room roomById = getRoomById(roomId);
         order.setRoom(roomById);
         return orderService.createOrder(order);
@@ -147,10 +147,10 @@ public class RoomService {
 
     /**
      * @param roomId provided room id
-     * @return List of orders
+     * @return List of order
      * @throws RoomNotFoundException if room is not found by <code>roomId</code>
      */
-    public List<Orders> getOrdersByRoomId(Long roomId) {
+    public List<Order> getOrdersByRoomId(Long roomId) {
         Room roomById = getRoomById(roomId);
         return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
     }

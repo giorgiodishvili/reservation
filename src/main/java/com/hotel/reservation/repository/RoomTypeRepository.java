@@ -14,4 +14,7 @@ public interface RoomTypeRepository extends CrudRepository<RoomType, Long> {
 
     Optional<RoomType> findByLabelOrId(String label, Long id);
 
+    boolean existsById(@Param("roomTypeId") Long roomTypeId);
+
+
 }
