@@ -8,6 +8,7 @@ import com.hotel.reservation.exception.order.OrderIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
 import com.hotel.reservation.exception.order.OrderPlacedInPastException;
 import com.hotel.reservation.exception.room.RoomIdNotFoundException;
+import com.hotel.reservation.exception.room.RoomIsBusyException;
 import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
@@ -15,9 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -53,15 +52,9 @@ public class OrderService {
      */
     public Order getOrderById(Long orderId) {
         log.trace("executing getOrderById");
-        log.info("id is :{}", orderId);
-        Order order = null;
-        try{
-            order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
-        }catch(OrderNotFoundException e){
-            log.info("Order Id not found: ",e);
-        }
+        log.debug("Order id is :{}", orderId);
 
-        return order;
+        return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
     }
 
     /**
@@ -71,31 +64,37 @@ public class OrderService {
      */
     public Order createOrder(Order order) {
         log.trace("executing createOrder");
-        Order savedOrder = null;
+        log.debug("order is :{}", order);
 
-        try{
-            if (Objects.nonNull(order.getId()) && 0L != order.getId()) {
-                throw new OrderIdMustBeZeroOrNullException();
-            }
+        if (Objects.nonNull(order.getId()) && 0L != order.getId()) {
+            log.info("Order Id must be zero or null exception");
 
-            savedOrder = saveToOrderRepo(order);
-        }catch(OrderIdMustBeZeroOrNullException e){
-            log.info("Order Id must be zero or null exception: ",e);
+            throw new OrderIdMustBeZeroOrNullException();
         }
 
-        return savedOrder;
+
+        return checkingRequirementsOfOrderBeforeSaving(order);
     }
 
     /**
      * @param orderId id of an order
-     * @param order  updated version of a single order
+     * @param order   updated version of a single order
      * @return Order
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      */
     public Order updateOrder(Long orderId, Order order) {
-        getOrderById(orderId);
+
+        log.trace("executing updateOrder");
+        log.debug("Order id is :{}", orderId);
         order.setId(orderId);
-        return saveToOrderRepo(order);
+        log.debug("Order to be saved :{}", order);
+
+        if (orderExistsById(orderId)) {
+            log.info("Order not found exception");
+            throw new OrderNotFoundException();
+        }
+
+        return checkingRequirementsOfOrderBeforeSaving(order);
     }
 
     /**
@@ -104,8 +103,14 @@ public class OrderService {
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      */
     public Order deleteOrderById(Long orderId) {
+
+        log.trace("executing deleteOrderById");
+        log.debug("Order id is :{}", orderId);
+
         Order orderById = getOrderById(orderId);
+        log.debug("Order is :{}", orderById);
         orderRepository.deleteById(orderId);
+
         return orderById;
     }
 
@@ -116,22 +121,12 @@ public class OrderService {
      * @throws RoomNotFoundException if room is not found by this label
      */
     public boolean checkOrder(String roomLabel, String UUID) {
+
+        log.trace("executing checkOrder");
+        log.debug("UUID is :{}", UUID);
+        log.debug("roomLabel is :{}", roomLabel);
         Room roomByLabel = roomRepo.findByLabel(roomLabel).orElseThrow(RoomNotFoundException::new);
-
-        List<Order> allByRoom = orderRepository.findAllByRoom(roomByLabel);
-
-        /*
-        აქ 1 მაინც order.getUuid().equals(UUID) თუ შესრულდება True უნდა დააბრუნო?
-        ეს მგონი ის თემაა, თუ ჯავშანი "ახლა" ადევს ოთახს იმის UUID უნდა იყოს გადმოცემულ პარამერტს არა?
-        და ყველა Order რომ არ არახუნო ბაზიდან, არ ჯობდა UUID-ით დაგეთრია Order? (ხომ ხვდები რომ 1 უნდა იყოს მაინც)
-         */
-        for (Order order : allByRoom) {
-            if (order.getUuid().equals(UUID)) {
-                return true;
-            }
-        }
-
-        return false;
+        return orderExistsByRoomAndUUIDAndEndDateMoreThanToday(roomByLabel, UUID);
     }
 
     /**
@@ -142,25 +137,54 @@ public class OrderService {
      * @throws OrderCanNotBeAddedException if room is not free
      * @throws OrderPlacedInPastException  if passed date is the in past
      */
-    // ეს @NotNull ანოტაცია რას გიგივარებს?
-    @NotNull
-    // ამის სახელს ვერ ჩავწვდი. saveToOrderRepo
-    private Order saveToOrderRepo(Order order) {
-        Long roomId = Optional.ofNullable(order.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
-        Room roomById = roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        order.setRoom(roomById);
+    private Order checkingRequirementsOfOrderBeforeSaving(Order order) {
 
-        log.debug("room roomId is :{}", roomId);
+        log.trace("executing checkingRequirementsOfOrderBeforeSaving");
+        log.debug("Order is :{}", order);
+
+        Long roomId = Optional.ofNullable(order.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
+        log.debug("Room Id is :{}", roomId);
+
+        Room roomById = roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
+        log.debug("Room By Id is :{}", roomById);
+
+        order.setRoom(roomById);
         boolean isRoomBusy = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(order.getRoom(), order.getPeriodBegin(), order.getPeriodEnd());
 
         if (isRoomBusy) {
-            throw new OrderCanNotBeAddedException(); //Room is busy Exception xom ar jobia ? კი, რატომაც არა.
+            log.info("Room is Busy Exception");
+            throw new RoomIsBusyException();
         }
 
         int difference = order.getPeriodBegin().compareTo(LocalDate.now());
         if (difference >= 0) {
+            log.info("Order placed in the past Exception");
             throw new OrderPlacedInPastException();
         }
         return orderRepository.save(order);
+    }
+
+    /**
+     * @param orderId provided room id
+     * @return boolean
+     */
+    public boolean orderExistsById(Long orderId) {
+        log.trace("executing orderExistsById");
+        log.debug("Order ID is :{}", orderId);
+
+        return orderRepository.existsById(orderId);
+    }
+
+    /**
+     * @param room provided room
+     * @param UUID provided UUID
+     * @return boolean
+     */
+    public boolean orderExistsByRoomAndUUIDAndEndDateMoreThanToday(Room room, String UUID) {
+
+        log.trace("executing orderExistsByRoomAndUUIDAndEndDateMoreThanToday");
+        log.debug("Room is :{}", room);
+        log.debug("UUID is :{}", UUID);
+        return orderRepository.existsByRoomAndUuidAndPeriodEndGreaterThanEqual(room, UUID, LocalDate.now());
     }
 }

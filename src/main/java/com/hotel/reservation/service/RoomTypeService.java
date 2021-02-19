@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -33,7 +32,6 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @return Iterable of Room Type
      */
     public Iterable<RoomType> getAllRoomTypes() {
@@ -42,7 +40,6 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomTypeId provided room type id
      * @return RoomType
      * @throws RoomTypeNotFoundException if room type is not found by room type id
@@ -54,7 +51,6 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomType provided room Type
      * @return RoomType
      * @throws RoomTypeIdMustBeZeroOrNullException if room type id is not zero or null
@@ -82,7 +78,6 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomTypeId provided room type id
      * @return RoomType
      * @throws RoomTypeNotFoundException if room type is not found by room type id
@@ -109,7 +104,6 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomTypeId provided room type id
      * @param roomType   provided roomType
      * @return RoomType
@@ -119,26 +113,24 @@ public class RoomTypeService {
     public RoomType updateRoomTypeById(Long roomTypeId, RoomType roomType) {
         log.trace("executing updateRoomTypeById");
 
-        if(!roomTypeExistsById(roomTypeId)){
+        if (!roomTypeExistsById(roomTypeId)) {
             throw new RoomTypeNotFoundException();
         }
 
-        log.debug("RoomType is :{}", roomType);
-        Optional<RoomType> byLabel = findRoomTypeByLabel(roomType.getLabel());
         roomType.setId(roomTypeId);
+        log.debug("RoomType is :{}", roomType);
 
-        if(byLabel.isPresent() && !(byLabel.get().getId().equals(roomTypeId))){
+        if (roomTypeExistsByRoomTypeLabelAndRoomTypeIdIsNot(roomType.getLabel(), roomType.getId())) {
+
             log.info("Room Type Label Already Exists");
             throw new RoomTypeLabelAlreadyExistsException();
+
         }
-
-            log.debug("Room Type updated :{}", roomType);
-            return roomTypeRepository.save(roomType);
-
+        log.debug("Room Type updated :{}", roomType);
+        return roomTypeRepository.save(roomType);
     }
 
     /**
-     *
      * @param roomTypeId provided room type if
      * @param room       provided room
      * @return Room
@@ -157,7 +149,6 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomTypeId provided room type id
      * @return List of Rooms
      * @throws RoomTypeNotFoundException if room type is not found by room type id
@@ -172,11 +163,10 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomTypeId provided room type id
      * @return boolean
      */
-    public boolean roomTypeExistsById(Long roomTypeId){
+    public boolean roomTypeExistsById(Long roomTypeId) {
         log.trace("executing getAllRoomsByRoomTypeId");
 
         log.debug("Room Type id is :{}", roomTypeId);
@@ -184,23 +174,10 @@ public class RoomTypeService {
     }
 
     /**
-     *
-     * @param roomTypeLabel provided room type label
-     * @return Optional of RoomType
-     */
-    public Optional<RoomType> findRoomTypeByLabel(String roomTypeLabel){
-        log.trace("executing findRoomTypeByLabel");
-        log.debug("Room Type label is :{}", roomTypeLabel);
-
-       return roomTypeRepository.findByLabel(roomTypeLabel);
-    }
-
-    /**
-     *
      * @param roomTypeLabel provided room type label
      * @return boolean
      */
-    public boolean roomTypeExistsByLabel(String roomTypeLabel){
+    public boolean roomTypeExistsByLabel(String roomTypeLabel) {
         log.trace("executing roomTypeExistsByLabel");
         log.debug("Room Type label is :{}", roomTypeLabel);
 
@@ -208,15 +185,25 @@ public class RoomTypeService {
     }
 
     /**
-     *
      * @param roomType provided roomType
      * @return boolean
      */
-    public boolean roomExistsByRoomType(RoomType roomType){
+    public boolean roomExistsByRoomType(RoomType roomType) {
         log.trace("executing roomExistsByRoomType");
         log.debug("Room Type is :{}", roomType);
 
         return roomRepository.existsByRoomType(roomType);
+    }
+
+    /**
+     * @param roomTypeLabel provided room type label
+     * @param roomTypeId    provided room type id
+     * @return boolean
+     */
+    public boolean roomTypeExistsByRoomTypeLabelAndRoomTypeIdIsNot(String roomTypeLabel, Long roomTypeId) {
+        log.trace("executing roomTypeExistsByRoomTypeLabelAndRoomTypeIdIsNot");
+        log.debug("Room Label is :{} and id :{}", roomTypeLabel, roomTypeId);
+        return roomTypeRepository.existsByLabelAndIdIsNot(roomTypeLabel, roomTypeId);
     }
 
 }

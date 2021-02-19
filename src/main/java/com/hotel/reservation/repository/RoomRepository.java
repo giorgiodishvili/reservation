@@ -2,6 +2,7 @@ package com.hotel.reservation.repository;
 
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
@@ -18,4 +19,9 @@ public interface RoomRepository extends CrudRepository<Room, Long> {
     Optional<Room> findByLabel(@Param("Label") String label);
 
     boolean existsByLabelAndIdIsNot(String label, Long id);
+
+    boolean existsByLabel(@Param("label") String label);
+
+    boolean existsById(@NotNull Long id);
+
 }

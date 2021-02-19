@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
@@ -23,8 +24,8 @@ public class RoomType {
     private Long id;
 
     @NotNull(message = "Label mustn't be null")
-    @Column(name = "LABEL", nullable = false)
-    @NotNull
+    @Column(name = "LABEL", nullable = false, unique = true)
+    @NotEmpty(message = "label mustn't be empty")
     private String label;
 
     @Column(name = "DESCRIPTION")

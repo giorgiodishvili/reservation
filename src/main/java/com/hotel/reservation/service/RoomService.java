@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 
 @Service
@@ -43,6 +42,8 @@ public class RoomService {
      * @return Iterable of Room
      */
     public Iterable<Room> getRooms() {
+        log.trace("executing getRooms");
+
         return roomRepo.findAll();
     }
 
@@ -51,8 +52,10 @@ public class RoomService {
      * @return Room
      * @throws RoomNotFoundException if room by roomId is not found
      */
-    //ამ შემთხვევაში როგორ დავლოგო ? TRY Catch ? ორჯერ ხომ არ გამოვისვრი, არასწორი მგონია
     public Room getRoomById(Long roomId) {
+        log.trace("executing getRoomById");
+        log.debug("Room id is :{}", roomId);
+
         return roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
     }
 
@@ -64,28 +67,24 @@ public class RoomService {
      * @throws RoomLabelAlreadyExistsException if room label already exists than room cant be saved
      */
     public Room createRoom(Room room) {
+        log.trace("executing createRoom");
+        log.debug("Room is :{}", room);
 
         if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
+            log.debug("Room ID is :{}", room.getId());
 
-            RoomIdMustBeZeroOrNullException roomIdMustBeZeroOrNullException = new RoomIdMustBeZeroOrNullException();
-
-            //ასე უნდა დაილოგოს ექსეფშენები ?
-            // ჰმმ. არა გიო. აქ რაც უნდა დაწერო არის info უფრო.
-            // ექსეფშენი, ჯერ უნდა დაიჭირო, მერე რომ დალოგო.
-            // შენს მიერ ნასროლი ერორი ერორად არ უნდა დალოგო.
-            // ეგ რეალურად ერორი არაა შენთვის. მხოლოდ სხვისთვის.
-            log.error("Room ID is :{}", room.getId(), roomIdMustBeZeroOrNullException);
-
-            throw roomIdMustBeZeroOrNullException;
+            log.info("Room id must be zero or null Exception");
+            throw new RoomIdMustBeZeroOrNullException();
         }
 
-        roomTypeRepository.findByLabelOrId(room.getRoomType().getLabel(), room.getRoomType().getId()).orElseThrow(RoomTypeNotFoundException::new);
-        Optional<Room> roomByLabel = roomRepo.findByLabel(room.getLabel());
+        if (!roomTypeRepository.existsByLabelOrId(room.getRoomType().getLabel(), room.getRoomType().getId())) {
+            log.info("Room Type not found Exception");
+            throw new RoomTypeNotFoundException();
+        }
 
-        if (roomByLabel.isPresent()) {
-            RoomLabelAlreadyExistsException roomLabelAlreadyExistsException = new RoomLabelAlreadyExistsException();
-            log.error("Room Label :{} Already exists ", roomByLabel.get().getLabel(), roomLabelAlreadyExistsException);
-            throw roomLabelAlreadyExistsException;
+        if (roomExistsByLabel(room.getLabel())) {
+            log.info("Room Label Already exists");
+            throw new RoomLabelAlreadyExistsException();
         }
 
         return roomRepo.save(room);
@@ -98,17 +97,21 @@ public class RoomService {
      * @throws RoomIsBusyException   if Room is Busy
      */
     public Room deleteRoomById(Long roomId) {
+
+        log.trace("executing deleteRoomById");
+        log.debug("Room ID is :{}", roomId);
+
         Room room = getRoomById(roomId);
 
-        // აქ EXISTSByRoomAndPeriodEndGreaterThanEqual მეთოდი რატო არ გამოიყენე და დაატარებ ამ Order-ებს ბაზიდან?
-        List<Order> allOrderByRoom = orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now());
+        if (orderRepository.existsByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now())) {
 
-        if (!allOrderByRoom.isEmpty()) {
-            RoomIsBusyException roomIsBusyException = new RoomIsBusyException();
-            log.error("Room is Busy ", roomIsBusyException);
-            throw roomIsBusyException;
+            log.info("Room is Busy Exception");
+            throw new RoomIsBusyException();
         }
+
         roomRepo.deleteById(roomId);
+        log.debug("Deleted Room :{}", room);
+
         return room;
     }
 
@@ -120,15 +123,24 @@ public class RoomService {
      * @throws RoomLabelAlreadyExistsException if room label exists
      */
     public Room updateRoomById(Long roomId, Room room) {
-        getRoomById(roomId);
 
-        if (roomRepo.existsByLabelAndIdIsNot(room.getLabel(), roomId)) {
-            RoomLabelAlreadyExistsException roomLabelAlreadyExistsException = new RoomLabelAlreadyExistsException();
-            log.error("Room Label Already exists ", roomLabelAlreadyExistsException);
-
-            throw roomLabelAlreadyExistsException;
-        }
+        log.trace("executing deleteRoomById");
+        log.debug("Room ID is :{}", roomId);
         room.setId(roomId);
+        log.debug("Room to be saved :{}", room);
+
+
+        if (roomExistsByRoomId(roomId)) {
+            log.info("Room not found Exception");
+            throw new RoomNotFoundException();
+        }
+
+        if (roomExistsByRoomLabelAndRoomIdIsNot(room.getLabel(), room.getId())) {
+            log.info("Room Label Already exists");
+            throw new RoomLabelAlreadyExistsException();
+        }
+
+        log.debug("Room saved");
         return roomRepo.save(room);
     }
 
@@ -140,7 +152,14 @@ public class RoomService {
      * @throws RoomNotFoundException if room is not found by room id
      */
     public Order createOrder(Long roomId, Order order) {
+
+        log.trace("executing createOrder in Room Service");
+        log.debug("Room ID is :{}", roomId);
+        log.debug("Order to be saved is :{}", order);
+
         Room roomById = getRoomById(roomId);
+        log.debug("Room by id is :{}", roomById);
+
         order.setRoom(roomById);
         return orderService.createOrder(order);
     }
@@ -151,8 +170,46 @@ public class RoomService {
      * @throws RoomNotFoundException if room is not found by <code>roomId</code>
      */
     public List<Order> getOrdersByRoomId(Long roomId) {
+
+        log.trace("executing getOrdersByRoomId in Room Service");
+        log.debug("Room ID is :{}", roomId);
+
         Room roomById = getRoomById(roomId);
+        log.debug("Room By ID is :{}", roomById);
+
         return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
     }
 
+    /**
+     * @param roomLabel provided room label
+     * @return boolean
+     */
+    public boolean roomExistsByLabel(String roomLabel) {
+        log.trace("executing roomExistsByLabel");
+        log.debug("Room Label is :{}", roomLabel);
+        return roomRepo.existsByLabel(roomLabel);
+    }
+
+    /**
+     * @param roomId provided room id
+     * @return boolean
+     */
+    public boolean roomExistsByRoomId(Long roomId) {
+        log.trace("executing roomExistsByRoomId");
+        log.debug("Room id is :{}", roomId);
+
+        return roomRepo.existsById(roomId);
+    }
+
+    /**
+     * @param roomLabel provided Room Label
+     * @param roomId    provided Room ID
+     * @return boolean
+     */
+    public boolean roomExistsByRoomLabelAndRoomIdIsNot(String roomLabel, Long roomId) {
+        log.trace("executing roomExistsByRoomLabelAndRoomIdIsNot");
+        log.debug("Room label is :{} and id is :{}", roomLabel, roomId);
+
+        return roomRepo.existsByLabelAndIdIsNot(roomLabel, roomId);
+    }
 }

@@ -24,8 +24,9 @@ public class Room {
     private Long id;
 
     @NotNull(message = "label mustn't be null")
-    @Column(name = "LABEL", nullable = false) // აქ თავდაცვისთვის unique = true-ს ხომ არ დაამატებდი?
-    @NotEmpty(message = "label mustn't be empty") // ჰა რას იტყვი აბა? ზედმეტი ხომ არაა?
+    @Column(name = "LABEL", nullable = false, unique = true)
+    @NotEmpty(message = "label mustn't be empty")
+    // ჰა რას იტყვი აბა? ზედმეტი ხომ არაა? es amowmebs marto spacebi ro ar iyos shemoyvanili xo ?
     private String label;
 
     @ManyToOne
