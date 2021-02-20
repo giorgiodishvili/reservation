@@ -35,7 +35,7 @@ public class RoomController {
         return roomService.getRoomById(roomId);
     }
 
-    @GetMapping("/{roomId}/order")
+    @GetMapping("/{roomId}/order") // არადა orders სწორი იყო. :(
     public List<Order> getOrders(@PathVariable("roomId") Long roomId) {
         log.trace("executing getOrders in Room controller");
         return roomService.getOrdersByRoomId(roomId);
@@ -48,7 +48,7 @@ public class RoomController {
     }
 
 
-    @PostMapping("/{roomId}/order")
+    @PostMapping("/{roomId}/order") // არადა orders სწორი იყო. :(
     public Order saveOrder(@PathVariable("roomId") Long roomId, @RequestBody @Valid Order order) {
         log.trace("executing saveOrder in Room controller");
         return roomService.createOrder(roomId, order);

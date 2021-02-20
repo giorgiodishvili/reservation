@@ -10,7 +10,7 @@ import javax.validation.Valid;
 
 
 @RestController
-@RequestMapping("/order")
+@RequestMapping("/order")// არადა orders სწორი იყო. :(
 @Slf4j
 public class OrderController {
 
