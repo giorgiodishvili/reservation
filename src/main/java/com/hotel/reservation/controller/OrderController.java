@@ -1,5 +1,6 @@
 package com.hotel.reservation.controller;
 
+import com.hotel.reservation.adapter.OrderAdapter;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ public class OrderController {
     }
 
     @PutMapping("/{orderId}")
-    public Order updateOrder(@PathVariable("orderId") Long orderId, @RequestBody @Valid Order order) {
+    public OrderAdapter updateOrder(@PathVariable("orderId") Long orderId, @RequestBody @Valid OrderAdapter order) {
         return orderService.updateOrder(orderId, order);
     }
 
