@@ -42,7 +42,7 @@ public class RoomService {
      * @return Iterable of Room
      */
     public Iterable<Room> getRooms() {
-        log.trace("executing getRooms");
+        log.trace("executing getRooms in Room Service");
 
         return roomRepo.findAll();
     }
@@ -53,7 +53,7 @@ public class RoomService {
      * @throws RoomNotFoundException if room by roomId is not found
      */
     public Room getRoomById(Long roomId) {
-        log.trace("executing getRoomById");
+        log.trace("executing getRoomById in Room Service");
         log.debug("Room id is :{}", roomId);
 
         return roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
@@ -67,7 +67,7 @@ public class RoomService {
      * @throws RoomLabelAlreadyExistsException if room label already exists than room cant be saved
      */
     public Room createRoom(Room room) {
-        log.trace("executing createRoom");
+        log.trace("executing createRoom in Room Service");
         log.debug("Room is :{}", room);
 
         if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
@@ -98,7 +98,7 @@ public class RoomService {
      */
     public Room deleteRoomById(Long roomId) {
 
-        log.trace("executing deleteRoomById");
+        log.trace("executing deleteRoomById in Room Service");
         log.debug("Room ID is :{}", roomId);
 
         Room room = getRoomById(roomId);
@@ -124,7 +124,7 @@ public class RoomService {
      */
     public Room updateRoomById(Long roomId, Room room) {
 
-        log.trace("executing deleteRoomById");
+        log.trace("executing deleteRoomById in Room Service");
         log.debug("Room ID is :{}", roomId);
         room.setId(roomId);
         log.debug("Room to be saved :{}", room);
@@ -185,7 +185,7 @@ public class RoomService {
      * @return boolean
      */
     public boolean roomExistsByLabel(String roomLabel) {
-        log.trace("executing roomExistsByLabel");
+        log.trace("executing roomExistsByLabel in Room Service");
         log.debug("Room Label is :{}", roomLabel);
         return roomRepo.existsByLabel(roomLabel);
     }
@@ -195,7 +195,7 @@ public class RoomService {
      * @return boolean
      */
     public boolean roomExistsByRoomId(Long roomId) {
-        log.trace("executing roomExistsByRoomId");
+        log.trace("executing roomExistsByRoomId in Room Service");
         log.debug("Room id is :{}", roomId);
 
         return roomRepo.existsById(roomId);
@@ -207,7 +207,7 @@ public class RoomService {
      * @return boolean
      */
     public boolean roomExistsByRoomLabelAndRoomIdIsNot(String roomLabel, Long roomId) {
-        log.trace("executing roomExistsByRoomLabelAndRoomIdIsNot");
+        log.trace("executing roomExistsByRoomLabelAndRoomIdIsNot in Room Service");
         log.debug("Room label is :{} and id is :{}", roomLabel, roomId);
 
         return roomRepo.existsByLabelAndIdIsNot(roomLabel, roomId);

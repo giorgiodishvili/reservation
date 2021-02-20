@@ -3,7 +3,6 @@ package com.hotel.reservation.service;
 
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.order.OrderCanNotBeAddedException;
 import com.hotel.reservation.exception.order.OrderIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
 import com.hotel.reservation.exception.order.OrderPlacedInPastException;
@@ -19,9 +18,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Optional;
-
-
-//TODO add logging
 
 
 @Service
@@ -41,7 +37,7 @@ public class OrderService {
      * @return Iterable of Orders
      */
     public Iterable<Order> getAllOrders() {
-        log.trace("executing getAllOrders");
+        log.trace("executing getAllOrders in Order Service");
         return orderRepository.findAll();
     }
 
@@ -51,7 +47,7 @@ public class OrderService {
      * @throws OrderNotFoundException if orderId is not found
      */
     public Order getOrderById(Long orderId) {
-        log.trace("executing getOrderById");
+        log.trace("executing getOrderById in Order Service");
         log.debug("Order id is :{}", orderId);
 
         return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
@@ -63,7 +59,7 @@ public class OrderService {
      * @throws OrderIdMustBeZeroOrNullException if Order Id is not zero or null
      */
     public Order createOrder(Order order) {
-        log.trace("executing createOrder");
+        log.trace("executing createOrder in Order Service");
         log.debug("order is :{}", order);
 
         if (Objects.nonNull(order.getId()) && 0L != order.getId()) {
@@ -84,7 +80,7 @@ public class OrderService {
      */
     public Order updateOrder(Long orderId, Order order) {
 
-        log.trace("executing updateOrder");
+        log.trace("executing updateOrder in Order Service");
         log.debug("Order id is :{}", orderId);
         order.setId(orderId);
         log.debug("Order to be saved :{}", order);
@@ -104,7 +100,7 @@ public class OrderService {
      */
     public Order deleteOrderById(Long orderId) {
 
-        log.trace("executing deleteOrderById");
+        log.trace("executing deleteOrderById in Order Service");
         log.debug("Order id is :{}", orderId);
 
         Order orderById = getOrderById(orderId);
@@ -122,7 +118,7 @@ public class OrderService {
      */
     public boolean checkOrder(String roomLabel, String UUID) {
 
-        log.trace("executing checkOrder");
+        log.trace("executing checkOrder in Order Service");
         log.debug("UUID is :{}", UUID);
         log.debug("roomLabel is :{}", roomLabel);
         Room roomByLabel = roomRepo.findByLabel(roomLabel).orElseThrow(RoomNotFoundException::new);
@@ -132,14 +128,14 @@ public class OrderService {
     /**
      * @param order order which should be saved
      * @return Orders
-     * @throws RoomIdNotFoundException     if order doesn't have room id
-     * @throws RoomNotFoundException       if room doesnt exists by provided id
-     * @throws OrderCanNotBeAddedException if room is not free
-     * @throws OrderPlacedInPastException  if passed date is the in past
+     * @throws RoomIdNotFoundException    if order doesn't have room id
+     * @throws RoomNotFoundException      if room doesnt exists by provided id
+     * @throws RoomIsBusyException        if room is not free
+     * @throws OrderPlacedInPastException if passed date is the in past
      */
     private Order checkingRequirementsOfOrderBeforeSaving(Order order) {
 
-        log.trace("executing checkingRequirementsOfOrderBeforeSaving");
+        log.trace("executing checkingRequirementsOfOrderBeforeSaving in Order Service");
         log.debug("Order is :{}", order);
 
         Long roomId = Optional.ofNullable(order.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
@@ -169,7 +165,7 @@ public class OrderService {
      * @return boolean
      */
     public boolean orderExistsById(Long orderId) {
-        log.trace("executing orderExistsById");
+        log.trace("executing orderExistsById in Order Service");
         log.debug("Order ID is :{}", orderId);
 
         return orderRepository.existsById(orderId);
@@ -182,7 +178,7 @@ public class OrderService {
      */
     public boolean orderExistsByRoomAndUUIDAndEndDateMoreThanToday(Room room, String UUID) {
 
-        log.trace("executing orderExistsByRoomAndUUIDAndEndDateMoreThanToday");
+        log.trace("executing orderExistsByRoomAndUUIDAndEndDateMoreThanToday in Order Service");
         log.debug("Room is :{}", room);
         log.debug("UUID is :{}", UUID);
         return orderRepository.existsByRoomAndUuidAndPeriodEndGreaterThanEqual(room, UUID, LocalDate.now());
