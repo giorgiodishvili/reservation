@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 
 public interface OrderRepository extends CrudRepository<Order, Long> {
@@ -24,6 +25,5 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
 
     boolean existsById(@NotNull Long id);
 
-    boolean existsByRoomAndUuidAndPeriodEndGreaterThanEqual(Room room, String UUID, LocalDate currentDate);
-
+    Optional<Order> findByUuid(String uuid);
 }

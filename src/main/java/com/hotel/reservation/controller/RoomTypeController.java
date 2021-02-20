@@ -31,19 +31,16 @@ public class RoomTypeController {
 
     @GetMapping("/{roomTypeId}")
     public RoomType getRoomTypeById(@PathVariable("roomTypeId") Long roomTypeId) {
-        log.trace("executing getRoomTypeById in Room Type controller");
         return roomTypeService.getRoomTypeById(roomTypeId);
     }
 
     @GetMapping("/{roomTypeId}/rooms")
     public List<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") Long roomTypeId) {
-        log.trace("executing getRoomsByRoomTypeId in Room Type controller");
         return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId);
     }
 
     @PostMapping
     public RoomType createRoomType(@RequestBody @Valid RoomType roomType) {
-        log.trace("executing createRoomType in Room Type controller");
         return roomTypeService.createRoomType(roomType);
 
     }
@@ -51,19 +48,16 @@ public class RoomTypeController {
 
     @PostMapping("/{roomTypeId}/rooms")
     public Room createRoomByRoomType(@PathVariable("roomTypeId") Long roomTypeId, @RequestBody @Valid Room room) {
-        log.trace("executing createRoomByRoomType in Room Type controller");
         return roomTypeService.createRoomByRoomType(roomTypeId, room);
     }
 
     @PutMapping("/{roomTypeId}")
     public RoomType updateRoomTypeById(@PathVariable("roomTypeId") Long roomTypeId, @RequestBody @Valid RoomType roomType) {
-        log.trace("executing updateRoomTypeById in Room Type controller");
         return roomTypeService.updateRoomTypeById(roomTypeId, roomType);
     }
 
     @DeleteMapping("/{roomTypeId}")
     public RoomType deleteRoomTypeById(@PathVariable("roomTypeId") Long roomTypeId) {
-        log.trace("executing deleteRoomTypeById in Room Type controller");
         return roomTypeService.deleteRoomTypeById(roomTypeId);
     }
 

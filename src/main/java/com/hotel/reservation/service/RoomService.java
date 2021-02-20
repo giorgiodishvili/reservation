@@ -42,8 +42,6 @@ public class RoomService {
      * @return Iterable of Room
      */
     public Iterable<Room> getRooms() {
-        log.trace("executing getRooms in Room Service");
-
         return roomRepo.findAll();
     }
 
@@ -53,9 +51,6 @@ public class RoomService {
      * @throws RoomNotFoundException if room by roomId is not found
      */
     public Room getRoomById(Long roomId) {
-        log.trace("executing getRoomById in Room Service");
-        log.debug("Room id is :{}", roomId);
-
         return roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
     }
 
@@ -67,23 +62,15 @@ public class RoomService {
      * @throws RoomLabelAlreadyExistsException if room label already exists than room cant be saved
      */
     public Room createRoom(Room room) {
-        log.trace("executing createRoom in Room Service");
-        log.debug("Room is :{}", room);
-
         if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
-            log.debug("Room ID is :{}", room.getId());
-
-            log.info("Room id must be zero or null Exception");
             throw new RoomIdMustBeZeroOrNullException();
         }
 
         if (!roomTypeRepository.existsByLabelOrId(room.getRoomType().getLabel(), room.getRoomType().getId())) {
-            log.info("Room Type not found Exception");
             throw new RoomTypeNotFoundException();
         }
 
         if (roomExistsByLabel(room.getLabel())) {
-            log.info("Room Label Already exists");
             throw new RoomLabelAlreadyExistsException();
         }
 
@@ -97,15 +84,9 @@ public class RoomService {
      * @throws RoomIsBusyException   if Room is Busy
      */
     public Room deleteRoomById(Long roomId) {
-
-        log.trace("executing deleteRoomById in Room Service");
-        log.debug("Room ID is :{}", roomId);
-
         Room room = getRoomById(roomId);
 
         if (orderRepository.existsByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now())) {
-
-            log.info("Room is Busy Exception");
             throw new RoomIsBusyException();
         }
 
@@ -123,24 +104,15 @@ public class RoomService {
      * @throws RoomLabelAlreadyExistsException if room label exists
      */
     public Room updateRoomById(Long roomId, Room room) {
-
-        log.trace("executing deleteRoomById in Room Service");
-        log.debug("Room ID is :{}", roomId);
         room.setId(roomId);
-        log.debug("Room to be saved :{}", room);
-
-
         if (roomExistsByRoomId(roomId)) {
-            log.info("Room not found Exception");
             throw new RoomNotFoundException();
         }
 
         if (roomExistsByRoomLabelAndRoomIdIsNot(room.getLabel(), room.getId())) {
-            log.info("Room Label Already exists");
             throw new RoomLabelAlreadyExistsException();
         }
 
-        log.debug("Room saved");
         return roomRepo.save(room);
     }
 
@@ -152,11 +124,6 @@ public class RoomService {
      * @throws RoomNotFoundException if room is not found by room id
      */
     public Order createOrder(Long roomId, Order order) {
-
-        log.trace("executing createOrder in Room Service");
-        log.debug("Room ID is :{}", roomId);
-        log.debug("Order to be saved is :{}", order);
-
         Room roomById = getRoomById(roomId);
         log.debug("Room by id is :{}", roomById);
 
@@ -170,13 +137,8 @@ public class RoomService {
      * @throws RoomNotFoundException if room is not found by <code>roomId</code>
      */
     public List<Order> getOrdersByRoomId(Long roomId) {
-
-        log.trace("executing getOrdersByRoomId in Room Service");
-        log.debug("Room ID is :{}", roomId);
-
         Room roomById = getRoomById(roomId);
         log.debug("Room By ID is :{}", roomById);
-
         return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
     }
 
@@ -185,8 +147,6 @@ public class RoomService {
      * @return boolean
      */
     public boolean roomExistsByLabel(String roomLabel) {
-        log.trace("executing roomExistsByLabel in Room Service");
-        log.debug("Room Label is :{}", roomLabel);
         return roomRepo.existsByLabel(roomLabel);
     }
 
@@ -195,9 +155,6 @@ public class RoomService {
      * @return boolean
      */
     public boolean roomExistsByRoomId(Long roomId) {
-        log.trace("executing roomExistsByRoomId in Room Service");
-        log.debug("Room id is :{}", roomId);
-
         return roomRepo.existsById(roomId);
     }
 
@@ -207,9 +164,6 @@ public class RoomService {
      * @return boolean
      */
     public boolean roomExistsByRoomLabelAndRoomIdIsNot(String roomLabel, Long roomId) {
-        log.trace("executing roomExistsByRoomLabelAndRoomIdIsNot in Room Service");
-        log.debug("Room label is :{} and id is :{}", roomLabel, roomId);
-
         return roomRepo.existsByLabelAndIdIsNot(roomLabel, roomId);
     }
 }

@@ -37,7 +37,6 @@ public class OrderService {
      * @return Iterable of Orders
      */
     public Iterable<Order> getAllOrders() {
-        log.trace("executing getAllOrders in Order Service");
         return orderRepository.findAll();
     }
 
@@ -47,9 +46,6 @@ public class OrderService {
      * @throws OrderNotFoundException if orderId is not found
      */
     public Order getOrderById(Long orderId) {
-        log.trace("executing getOrderById in Order Service");
-        log.debug("Order id is :{}", orderId);
-
         return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
     }
 
@@ -59,12 +55,7 @@ public class OrderService {
      * @throws OrderIdMustBeZeroOrNullException if Order Id is not zero or null
      */
     public Order createOrder(Order order) {
-        log.trace("executing createOrder in Order Service");
-        log.debug("order is :{}", order);
-
         if (Objects.nonNull(order.getId()) && 0L != order.getId()) {
-            log.info("Order Id must be zero or null exception");
-
             throw new OrderIdMustBeZeroOrNullException();
         }
 
@@ -79,14 +70,8 @@ public class OrderService {
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      */
     public Order updateOrder(Long orderId, Order order) {
-
-        log.trace("executing updateOrder in Order Service");
-        log.debug("Order id is :{}", orderId);
         order.setId(orderId);
-        log.debug("Order to be saved :{}", order);
-
         if (orderExistsById(orderId)) {
-            log.info("Order not found exception");
             throw new OrderNotFoundException();
         }
 
@@ -100,9 +85,6 @@ public class OrderService {
      */
     public Order deleteOrderById(Long orderId) {
 
-        log.trace("executing deleteOrderById in Order Service");
-        log.debug("Order id is :{}", orderId);
-
         Order orderById = getOrderById(orderId);
         log.debug("Order is :{}", orderById);
         orderRepository.deleteById(orderId);
@@ -114,15 +96,16 @@ public class OrderService {
      * @param roomLabel label of a room
      * @param UUID      uuid of the order
      * @return boolean
-     * @throws RoomNotFoundException if room is not found by this label
+     * @throws RoomNotFoundException if room is not found by <code>roomLabel</code>
+     * @throws OrderNotFoundException if room is not found by <code>UUID</code>
      */
     public boolean checkOrder(String roomLabel, String UUID) {
+        if(!roomRepo.existsByLabel(roomLabel)){
+            throw new RoomNotFoundException();
+        }
 
-        log.trace("executing checkOrder in Order Service");
-        log.debug("UUID is :{}", UUID);
-        log.debug("roomLabel is :{}", roomLabel);
-        Room roomByLabel = roomRepo.findByLabel(roomLabel).orElseThrow(RoomNotFoundException::new);
-        return orderExistsByRoomAndUUIDAndEndDateMoreThanToday(roomByLabel, UUID);
+        Order order = findOrderByUuid(UUID);
+        return LocalDate.now().compareTo(order.getPeriodBegin()) >= 0 &&  LocalDate.now().compareTo(order.getPeriodEnd()) >= 0 && roomLabel.equals(order.getRoom().getLabel());
     }
 
     /**
@@ -134,10 +117,6 @@ public class OrderService {
      * @throws OrderPlacedInPastException if passed date is the in past
      */
     private Order checkingRequirementsOfOrderBeforeSaving(Order order) {
-
-        log.trace("executing checkingRequirementsOfOrderBeforeSaving in Order Service");
-        log.debug("Order is :{}", order);
-
         Long roomId = Optional.ofNullable(order.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
         log.debug("Room Id is :{}", roomId);
 
@@ -148,13 +127,11 @@ public class OrderService {
         boolean isRoomBusy = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(order.getRoom(), order.getPeriodBegin(), order.getPeriodEnd());
 
         if (isRoomBusy) {
-            log.info("Room is Busy Exception");
             throw new RoomIsBusyException();
         }
 
         int difference = order.getPeriodBegin().compareTo(LocalDate.now());
         if (difference >= 0) {
-            log.info("Order placed in the past Exception");
             throw new OrderPlacedInPastException();
         }
         return orderRepository.save(order);
@@ -165,22 +142,16 @@ public class OrderService {
      * @return boolean
      */
     public boolean orderExistsById(Long orderId) {
-        log.trace("executing orderExistsById in Order Service");
-        log.debug("Order ID is :{}", orderId);
-
         return orderRepository.existsById(orderId);
     }
 
     /**
-     * @param room provided room
-     * @param UUID provided UUID
-     * @return boolean
+     *
+     * @param uuid provided order uuid
+     * @return Order
+     * @throws OrderNotFoundException if order is not found by uuid
      */
-    public boolean orderExistsByRoomAndUUIDAndEndDateMoreThanToday(Room room, String UUID) {
-
-        log.trace("executing orderExistsByRoomAndUUIDAndEndDateMoreThanToday in Order Service");
-        log.debug("Room is :{}", room);
-        log.debug("UUID is :{}", UUID);
-        return orderRepository.existsByRoomAndUuidAndPeriodEndGreaterThanEqual(room, UUID, LocalDate.now());
+    public Order findOrderByUuid(String uuid){
+        return orderRepository.findByUuid(uuid).orElseThrow(OrderNotFoundException::new);
     }
 }
