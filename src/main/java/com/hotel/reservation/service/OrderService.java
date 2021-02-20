@@ -1,6 +1,7 @@
 package com.hotel.reservation.service;
 
 
+import com.hotel.reservation.adapter.OrderAdapter;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.exception.order.OrderIdMustBeZeroOrNullException;
@@ -64,18 +65,28 @@ public class OrderService {
     }
 
     /**
-     * @param orderId id of an order
-     * @param order   updated version of a single order
-     * @return Order
+     * @param orderId      id of an order
+     * @param orderAdapter updated version of a single order
+     * @return OrderAdapter
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      */
-    public Order updateOrder(Long orderId, Order order) {
-        order.setId(orderId);
-        if (orderExistsById(orderId)) {
-            throw new OrderNotFoundException();
-        }
+    public OrderAdapter updateOrder(Long orderId, OrderAdapter orderAdapter) {
 
-        return checkingRequirementsOfOrderBeforeSaving(order);
+        Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+        order.setDescription(orderAdapter.getDescription());
+        order.setPeriodBegin(orderAdapter.getPeriodBegin());
+        order.setPeriodEnd(orderAdapter.getPeriodEnd());
+
+        /*
+        alternative of the code
+        requires to set updatable false parameter all @column that should not be updated
+            if (!orderExistsById(orderId)) {
+                throw new OrderNotFoundException();
+            }
+            Order order = orderAdapter.toOrder();
+            order.setId(orderId);
+         */
+        return new OrderAdapter(checkingRequirementsOfOrderBeforeSaving(order));
     }
 
     /**
@@ -96,16 +107,16 @@ public class OrderService {
      * @param roomLabel label of a room
      * @param UUID      uuid of the order
      * @return boolean
-     * @throws RoomNotFoundException if room is not found by <code>roomLabel</code>
+     * @throws RoomNotFoundException  if room is not found by <code>roomLabel</code>
      * @throws OrderNotFoundException if room is not found by <code>UUID</code>
      */
     public boolean checkOrder(String roomLabel, String UUID) {
-        if(!roomRepo.existsByLabel(roomLabel)){
+        if (!roomRepo.existsByLabel(roomLabel)) {
             throw new RoomNotFoundException();
         }
 
         Order order = findOrderByUuid(UUID);
-        return LocalDate.now().compareTo(order.getPeriodBegin()) >= 0 &&  LocalDate.now().compareTo(order.getPeriodEnd()) >= 0 && roomLabel.equals(order.getRoom().getLabel());
+        return LocalDate.now().compareTo(order.getPeriodBegin()) >= 0 && LocalDate.now().compareTo(order.getPeriodEnd()) >= 0 && roomLabel.equals(order.getRoom().getLabel());
     }
 
     /**
@@ -131,7 +142,7 @@ public class OrderService {
         }
 
         int difference = order.getPeriodBegin().compareTo(LocalDate.now());
-        if (difference >= 0) {
+        if (difference < 0) {
             throw new OrderPlacedInPastException();
         }
         return orderRepository.save(order);
@@ -146,12 +157,11 @@ public class OrderService {
     }
 
     /**
-     *
      * @param uuid provided order uuid
      * @return Order
      * @throws OrderNotFoundException if order is not found by uuid
      */
-    public Order findOrderByUuid(String uuid){
+    public Order findOrderByUuid(String uuid) {
         return orderRepository.findByUuid(uuid).orElseThrow(OrderNotFoundException::new);
     }
 }
