@@ -22,6 +22,7 @@ public interface OrderRepository extends CrudRepository<Order, Long> {
             , LocalDate endDate
     );
 
+    Optional<Order> findByIdAndRoom(Long id, Room room);
 
     boolean existsById(@NotNull Long id);
 

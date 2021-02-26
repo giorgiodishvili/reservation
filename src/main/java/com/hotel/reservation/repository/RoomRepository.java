@@ -24,4 +24,6 @@ public interface RoomRepository extends CrudRepository<Room, Long> {
 
     boolean existsById(@NotNull Long id);
 
+    Optional<Room> findByIdAndRoomType(Long id, RoomType roomType);
+
 }
