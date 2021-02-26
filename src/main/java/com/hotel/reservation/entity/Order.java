@@ -2,11 +2,11 @@ package com.hotel.reservation.entity;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -35,10 +35,12 @@ public class Order {
 
     @Column(name = "PERIOD_BEGIN", nullable = false)
     @NotNull(message = "Begin Period mustn't be null")
+    @FutureOrPresent
     private LocalDate periodBegin;
 
     @Column(name = "PERIOD_END", nullable = false)
     @NotNull(message = "End Period mustn't be null")
+    @FutureOrPresent
     private LocalDate periodEnd;
 
     @Column(name = "DESCRIPTION")
