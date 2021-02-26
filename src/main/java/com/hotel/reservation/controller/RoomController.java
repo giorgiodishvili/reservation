@@ -1,26 +1,32 @@
 package com.hotel.reservation.controller;
 
+import com.hotel.reservation.adapter.OrderAdapter;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
+import com.hotel.reservation.service.OrderService;
 import com.hotel.reservation.service.RoomService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 
 @RestController
 @RequestMapping(value = "/rooms")
-@Slf4j
+@Validated
 public class RoomController {
 
     private final RoomService roomService;
+    private final OrderService orderService;
 
     @Autowired
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, OrderService orderService) {
         this.roomService = roomService;
+        this.orderService = orderService;
     }
 
     @GetMapping
@@ -29,35 +35,29 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}")
-    public Room getRoomById(@PathVariable("roomId") Long roomId) {
+    public Room getRoomById(@PathVariable("roomId") @Min(1) Long roomId) {
         return roomService.getRoomById(roomId);
     }
 
     @GetMapping("/{roomId}/orders")
-    public List<Order> getOrders(@PathVariable("roomId") Long roomId) {
-        return roomService.getOrdersByRoomId(roomId);
+    public List<Order> getOrdersByRoom(@PathVariable("roomId") @Min(1) Long roomId) {
+        return orderService.getOrdersByRoomId(roomId);
     }
-
-    @PostMapping
-    public Room saveRoom(@RequestBody @Valid Room room) {
-        return roomService.createRoom(room);
-    }
-
 
     @PostMapping("/{roomId}/orders")
-    public Order saveOrder(@PathVariable("roomId") Long roomId, @RequestBody @Valid Order order) {
-        return roomService.createOrder(roomId, order);
+    @ResponseStatus(HttpStatus.CREATED)
+    public Order createOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid OrderAdapter orderAdapter) {
+        return orderService.createOrderByRoom(roomId, orderAdapter);
     }
 
-    @PutMapping("/{roomId}")
-    public Room updateRoom(@PathVariable("roomId") Long id, @RequestBody @Valid Room room) {
-        return roomService.updateRoomById(id, room);
+    @PutMapping("/{roomId}/orders/{orderId}")
+    public Order updateOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId, @RequestBody @Valid OrderAdapter orderAdapter) {
+        return orderService.updateOrderByRoomIdAndOrderId(roomId, orderId, orderAdapter);
     }
 
-    @DeleteMapping("/{roomId}")
-    public Room deleteRoomById(@PathVariable("roomId") Long roomId) {
-        return roomService.deleteRoomById(roomId);
+    @DeleteMapping("/{roomId}/orders/{orderId}")
+    public Order deleteOrderByRoomAndOrderId(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId) {
+        return orderService.deleteOrderByRoomIdAndOrderId(roomId, orderId);
     }
-
 
 }
