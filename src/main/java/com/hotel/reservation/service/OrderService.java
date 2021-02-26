@@ -4,7 +4,6 @@ package com.hotel.reservation.service;
 import com.hotel.reservation.adapter.OrderAdapter;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.order.OrderIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
 import com.hotel.reservation.exception.order.OrderPlacedInPastException;
 import com.hotel.reservation.exception.room.RoomIdNotFoundException;
@@ -17,8 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.List;
 
 
 @Service
@@ -27,11 +25,13 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final RoomRepository roomRepo;
+    private final RoomService roomService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, RoomRepository roomRepo) {
+    public OrderService(OrderRepository orderRepository, RoomRepository roomRepo, RoomService roomService) {
         this.orderRepository = orderRepository;
         this.roomRepo = roomRepo;
+        this.roomService = roomService;
     }
 
     /**
@@ -51,31 +51,33 @@ public class OrderService {
     }
 
     /**
-     * @param order single order which should be added
+     * @param roomId       provided room id
+     * @param orderAdapter provided order
      * @return Orders
-     * @throws OrderIdMustBeZeroOrNullException if Order Id is not zero or null
+     * @throws RoomNotFoundException if room is not found by room id
      */
-    public Order createOrder(Order order) {
-        if (Objects.nonNull(order.getId()) && 0L != order.getId()) {
-            throw new OrderIdMustBeZeroOrNullException();
-        }
+    public Order createOrderByRoom(Long roomId, OrderAdapter orderAdapter) {
+        Room roomById = roomService.getRoomById(roomId);
+        log.debug("Room by id is :{}", roomById);
+        Order order = orderAdapter.toOrder();
+        order.setRoom(roomById);
 
-
-        return checkingRequirementsOfOrderBeforeSaving(order);
+        return checkingRequirementsOfOrderAndSaving(order);
     }
 
     /**
+     * @param roomId       provided roomId
      * @param orderId      id of an order
      * @param orderAdapter updated version of a single order
      * @return OrderAdapter
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
+     * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    public OrderAdapter updateOrder(Long orderId, OrderAdapter orderAdapter) {
-
-        Order order = orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
-        order.setDescription(orderAdapter.getDescription());
-        order.setPeriodBegin(orderAdapter.getPeriodBegin());
-        order.setPeriodEnd(orderAdapter.getPeriodEnd());
+    public Order updateOrderByRoomIdAndOrderId(Long roomId, Long orderId, OrderAdapter orderAdapter) {
+        Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
+        orderById.setDescription(orderAdapter.getDescription());
+        orderById.setPeriodBegin(orderAdapter.getPeriodBegin());
+        orderById.setPeriodEnd(orderAdapter.getPeriodEnd());
 
         /*
         alternative of the code
@@ -86,22 +88,47 @@ public class OrderService {
             Order order = orderAdapter.toOrder();
             order.setId(orderId);
          */
-        return new OrderAdapter(checkingRequirementsOfOrderBeforeSaving(order));
+        return checkingRequirementsOfOrderAndSaving(orderById);
+    }
+
+    /**
+     * @param order order which should be saved
+     * @return Order
+     * @throws RoomIdNotFoundException    if order doesn't have room id
+     * @throws RoomNotFoundException      if room doesnt exists by provided id
+     * @throws RoomIsBusyException        if room is not free
+     * @throws OrderPlacedInPastException if passed date is the in past
+     */
+    private Order checkingRequirementsOfOrderAndSaving(Order order) {
+        boolean isRoomBusy = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(order.getRoom(), order.getPeriodBegin(), order.getPeriodEnd());
+
+        if (isRoomBusy) {
+            throw new RoomIsBusyException();
+        }
+
+        if (order.getPeriodBegin().compareTo(LocalDate.now()) < 0) {
+            throw new OrderPlacedInPastException();
+        }
+
+        return orderRepository.save(order);
     }
 
     /**
      * @param orderId id of an order
+     * @param roomId  provided roomId
      * @return Orders
-     * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
+     * @throws OrderNotFoundException OrderNotFoundException if order by orderId and roomId is not found
+     * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    public Order deleteOrderById(Long orderId) {
+    public Order deleteOrderByRoomIdAndOrderId(Long roomId, Long orderId) {
 
-        Order orderById = getOrderById(orderId);
+        Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
         log.debug("Order is :{}", orderById);
         orderRepository.deleteById(orderId);
 
         return orderById;
     }
+
 
     /**
      * @param roomLabel label of a room
@@ -111,49 +138,13 @@ public class OrderService {
      * @throws OrderNotFoundException if room is not found by <code>UUID</code>
      */
     public boolean checkOrder(String roomLabel, String UUID) {
-        if (!roomRepo.existsByLabel(roomLabel)) {
-            throw new RoomNotFoundException();
-        }
 
         Order order = findOrderByUuid(UUID);
-        return LocalDate.now().compareTo(order.getPeriodBegin()) >= 0 && LocalDate.now().compareTo(order.getPeriodEnd()) >= 0 && roomLabel.equals(order.getRoom().getLabel());
-    }
 
-    /**
-     * @param order order which should be saved
-     * @return Orders
-     * @throws RoomIdNotFoundException    if order doesn't have room id
-     * @throws RoomNotFoundException      if room doesnt exists by provided id
-     * @throws RoomIsBusyException        if room is not free
-     * @throws OrderPlacedInPastException if passed date is the in past
-     */
-    private Order checkingRequirementsOfOrderBeforeSaving(Order order) {
-        Long roomId = Optional.ofNullable(order.getRoom().getId()).orElseThrow(RoomIdNotFoundException::new);
-        log.debug("Room Id is :{}", roomId);
-
-        Room roomById = roomRepo.findById(roomId).orElseThrow(RoomNotFoundException::new);
-        log.debug("Room By Id is :{}", roomById);
-
-        order.setRoom(roomById);
-        boolean isRoomBusy = orderRepository.existsByRoomAndPeriodEndGreaterThanEqualAndPeriodBeginLessThanEqual(order.getRoom(), order.getPeriodBegin(), order.getPeriodEnd());
-
-        if (isRoomBusy) {
-            throw new RoomIsBusyException();
+        if (!roomLabel.equals(order.getRoom().getLabel())) {
+            throw new RoomNotFoundException();
         }
-
-        int difference = order.getPeriodBegin().compareTo(LocalDate.now());
-        if (difference < 0) {
-            throw new OrderPlacedInPastException();
-        }
-        return orderRepository.save(order);
-    }
-
-    /**
-     * @param orderId provided room id
-     * @return boolean
-     */
-    public boolean orderExistsById(Long orderId) {
-        return orderRepository.existsById(orderId);
+        return order.getPeriodBegin().compareTo(LocalDate.now()) * LocalDate.now().compareTo(order.getPeriodEnd()) >= 0;
     }
 
     /**
@@ -163,5 +154,16 @@ public class OrderService {
      */
     public Order findOrderByUuid(String uuid) {
         return orderRepository.findByUuid(uuid).orElseThrow(OrderNotFoundException::new);
+    }
+
+    /**
+     * @param roomId provided room id
+     * @return List of order
+     * @throws RoomNotFoundException if room is not found by <code>roomId</code>
+     */
+    public List<Order> getOrdersByRoomId(Long roomId) {
+        Room roomById = roomService.getRoomById(roomId);
+        log.debug("Room By ID is :{}", roomById);
+        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
     }
 }

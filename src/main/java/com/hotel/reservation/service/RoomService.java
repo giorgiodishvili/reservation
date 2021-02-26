@@ -1,22 +1,19 @@
 package com.hotel.reservation.service;
 
-import com.hotel.reservation.entity.Order;
+import com.hotel.reservation.adapter.RoomAdapter;
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.exception.room.RoomIdMustBeZeroOrNullException;
+import com.hotel.reservation.entity.RoomType;
 import com.hotel.reservation.exception.room.RoomIsBusyException;
 import com.hotel.reservation.exception.room.RoomLabelAlreadyExistsException;
 import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.exception.type.RoomTypeNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
-import com.hotel.reservation.repository.RoomTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Objects;
 
 
 @Service
@@ -25,16 +22,14 @@ public class RoomService {
 
     private final RoomRepository roomRepo;
     private final OrderRepository orderRepository;
-    private final RoomTypeRepository roomTypeRepository;
-    private final OrderService orderService;
+    private final RoomTypeService roomTypeService;
 
 
     @Autowired
-    public RoomService(RoomRepository roomRepo, OrderRepository orderRepository, RoomTypeRepository roomTypeRepository, OrderService orderService) {
+    public RoomService(RoomRepository roomRepo, OrderRepository orderRepository, RoomTypeService roomTypeService) {
         this.roomRepo = roomRepo;
         this.orderRepository = orderRepository;
-        this.roomTypeRepository = roomTypeRepository;
-        this.orderService = orderService;
+        this.roomTypeService = roomTypeService;
     }
 
 
@@ -55,24 +50,20 @@ public class RoomService {
     }
 
     /**
-     * @param room provided room
+     * @param roomAdapter provided room
      * @return Room
-     * @throws RoomIdMustBeZeroOrNullException if room id is not zero or null
      * @throws RoomTypeNotFoundException       if room type of specified room  is null
      * @throws RoomLabelAlreadyExistsException if room label already exists than room cant be saved
      */
-    public Room createRoom(Room room) {
-        if (Objects.nonNull(room.getId()) && 0L != room.getId()) {
-            throw new RoomIdMustBeZeroOrNullException();
-        }
+    public Room createRoomByRoomType(Long roomTypeId, RoomAdapter roomAdapter) {
+        RoomType roomTypeById = roomTypeService.getRoomTypeById(roomTypeId);
 
-        if (!roomTypeRepository.existsByLabelOrId(room.getRoomType().getLabel(), room.getRoomType().getId())) {
-            throw new RoomTypeNotFoundException();
-        }
-
-        if (roomExistsByLabel(room.getLabel())) {
+        if (roomExistsByLabel(roomAdapter.getLabel())) {
             throw new RoomLabelAlreadyExistsException();
         }
+
+        Room room = roomAdapter.toRoom();
+        room.setRoomType(roomTypeById);
 
         return roomRepo.save(room);
     }
@@ -83,8 +74,8 @@ public class RoomService {
      * @throws RoomNotFoundException if label exists and as well id is not room id
      * @throws RoomIsBusyException   if Room is Busy
      */
-    public Room deleteRoomById(Long roomId) {
-        Room room = getRoomById(roomId);
+    public Room deleteRoomById(Long roomTypeId, Long roomId) {
+        Room room = getRoomByIdAndRoomTypeId(roomId, roomTypeId);
 
         if (orderRepository.existsByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now())) {
             throw new RoomIsBusyException();
@@ -96,50 +87,30 @@ public class RoomService {
         return room;
     }
 
+    public Room getRoomByIdAndRoomTypeId(Long roomId, Long roomTypeId) {
+        return roomRepo.findByIdAndRoomType(roomId, roomTypeService.getRoomTypeById(roomTypeId)).orElseThrow(RoomNotFoundException::new);
+    }
+
     /**
-     * @param roomId provided id
-     * @param room   provided Room
+     * @param roomId      provided id
+     * @param roomAdapter provided Room
      * @return Room
      * @throws RoomNotFoundException           if label exists and as well id is not room id
      * @throws RoomLabelAlreadyExistsException if room label exists
      */
-    public Room updateRoomById(Long roomId, Room room) {
-        room.setId(roomId);
-        if (roomExistsByRoomId(roomId)) {
+    public Room updateRoomByRoomTypeAndRoomId(Long roomTypeId, Long roomId, RoomAdapter roomAdapter) {
+        if (!roomExistsByRoomId(roomId)) {
             throw new RoomNotFoundException();
         }
-
+        RoomType roomTypeById = roomTypeService.getRoomTypeById(roomTypeId);
+        Room room = roomAdapter.toRoom();
+        room.setId(roomId);
+        room.setRoomType(roomTypeById);
         if (roomExistsByRoomLabelAndRoomIdIsNot(room.getLabel(), room.getId())) {
             throw new RoomLabelAlreadyExistsException();
         }
 
         return roomRepo.save(room);
-    }
-
-
-    /**
-     * @param roomId provided room id
-     * @param order  provided order
-     * @return Orders
-     * @throws RoomNotFoundException if room is not found by room id
-     */
-    public Order createOrder(Long roomId, Order order) {
-        Room roomById = getRoomById(roomId);
-        log.debug("Room by id is :{}", roomById);
-
-        order.setRoom(roomById);
-        return orderService.createOrder(order);
-    }
-
-    /**
-     * @param roomId provided room id
-     * @return List of order
-     * @throws RoomNotFoundException if room is not found by <code>roomId</code>
-     */
-    public List<Order> getOrdersByRoomId(Long roomId) {
-        Room roomById = getRoomById(roomId);
-        log.debug("Room By ID is :{}", roomById);
-        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
     }
 
     /**
