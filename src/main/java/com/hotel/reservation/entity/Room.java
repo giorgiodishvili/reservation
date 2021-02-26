@@ -28,7 +28,6 @@ public class Room {
     @NotNull(message = "label mustn't be null")
     @Column(name = "LABEL", nullable = false, unique = true)
     @NotEmpty(message = "label mustn't be empty")
-    // ჰა რას იტყვი აბა? ზედმეტი ხომ არაა? es amowmebs marto spacebi ro ar iyos shemoyvanili xo ?
     private String label;
 
     @ManyToOne
