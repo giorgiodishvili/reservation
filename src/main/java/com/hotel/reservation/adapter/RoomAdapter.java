@@ -7,7 +7,6 @@ import javax.validation.constraints.NotNull;
 
 public class RoomAdapter {
     private final Room room;
-    public long roomTypeId;
 
     public RoomAdapter(Room room) {
         this.room = room;
@@ -17,10 +16,13 @@ public class RoomAdapter {
         this(new Room());
     }
 
-    public Long getId() {
-        return room.getId();
+    public Room toRoom() {
+        return room;
     }
 
+    /*
+    getters
+     */
     @NotNull(message = "label mustn't be null")
     @NotEmpty(message = "label mustn't be empty")
     public String getLabel() {
@@ -31,7 +33,16 @@ public class RoomAdapter {
         return room.getDescription();
     }
 
-    public long getRoomTypeId() {
-        return roomTypeId;
+
+    /*
+    setters
+     */
+    public void setLabel(String label) {
+        room.setLabel(label);
     }
+
+    public void setDescription(String description) {
+        room.setDescription(description);
+    }
+
 }
