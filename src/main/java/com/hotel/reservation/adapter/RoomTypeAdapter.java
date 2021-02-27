@@ -25,6 +25,10 @@ public class RoomTypeAdapter {
     /*
     getters
      */
+    public Long getId() {
+        return roomType.getId();
+    }
+
     @NotNull(message = "label mustn't be null")
     @NotEmpty(message = "label mustn't be empty")
     public String getLabel() {
@@ -39,6 +43,8 @@ public class RoomTypeAdapter {
     /*
    setters
     */
+    public void setId(Long id){}
+
     public void setLabel(@NotNull(message = "label mustn't be null")
                          @NotEmpty(message = "label mustn't be empty")
                                  String label) {
@@ -48,6 +54,7 @@ public class RoomTypeAdapter {
     public void setDescription(String description) {
         roomType.setDescription(description);
     }
+
 
 
 }
