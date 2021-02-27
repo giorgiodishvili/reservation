@@ -1,6 +1,8 @@
 package com.hotel.reservation.adapter;
 
 import com.hotel.reservation.entity.Order;
+import com.hotel.reservation.entity.Room;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -23,6 +25,15 @@ public class OrderAdapter {
     /*
       getters
          */
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public Long getId() {
+        return order.getId();
+    }
+
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
+    public Long getRoom() {
+        return order.getRoom().getId();
+    }
 
     public @NotNull(message = "Begin Period mustn't be null") LocalDate getPeriodBegin() {
         return order.getPeriodBegin();
@@ -40,6 +51,11 @@ public class OrderAdapter {
     /*
     setters
      */
+    public void setId(Long id) {
+    }
+
+    public void setRoom(Room room) {
+    }
 
     public void setPeriodBegin(@NotNull(message = "Begin Period mustn't be null") LocalDate periodBegin) {
         order.setPeriodBegin(periodBegin);
