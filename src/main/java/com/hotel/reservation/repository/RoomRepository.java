@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface RoomRepository extends CrudRepository<Room, Long> {
 
     Page<Room> findAll(Pageable pageable);
+
     boolean existsByRoomType(RoomType roomType);
 
     Page<Room> findByRoomType(RoomType roomType, Pageable pageable);
