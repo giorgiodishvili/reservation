@@ -43,8 +43,8 @@ public class RoomTypeController {
     }
 
     @GetMapping("/{roomTypeId}/rooms")
-    public Page<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") @Min(1) Long roomTypeId,Pageable pageable) {
-        return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId,pageable);
+    public Page<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, Pageable pageable) {
+        return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId, pageable);
     }
 
     @PostMapping
@@ -56,27 +56,27 @@ public class RoomTypeController {
 
     @PostMapping("/{roomTypeId}/rooms")
     @ResponseStatus(HttpStatus.CREATED)
-    public Room createRoomByRoomType(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @RequestBody @Valid RoomAdapter roomAdapter) {
+    public RoomAdapter createRoomByRoomType(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @RequestBody @Valid RoomAdapter roomAdapter) {
         return roomService.createRoomByRoomType(roomTypeId, roomAdapter);
     }
 
     @PutMapping("/{roomTypeId}/rooms/{roomId}")
-    public Room updateRoom(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid RoomAdapter roomAdapter) {
+    public RoomAdapter updateRoom(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid RoomAdapter roomAdapter) {
         return roomService.updateRoomByRoomTypeAndRoomId(roomTypeId, roomId, roomAdapter);
     }
 
     @DeleteMapping("/{roomTypeId}/rooms/{roomId}")
-    public Room deleteRoomById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @PathVariable("roomId") @Min(1) Long roomId) {
+    public RoomAdapter deleteRoomById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @PathVariable("roomId") @Min(1) Long roomId) {
         return roomService.deleteRoomById(roomTypeId, roomId);
     }
 
     @PutMapping("/{roomTypeId}")
-    public RoomType updateRoomTypeById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @RequestBody @Valid RoomTypeAdapter roomTypeAdapter) {
+    public RoomTypeAdapter updateRoomTypeById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, @RequestBody @Valid RoomTypeAdapter roomTypeAdapter) {
         return roomTypeService.updateRoomTypeById(roomTypeId, roomTypeAdapter);
     }
 
     @DeleteMapping("/{roomTypeId}")
-    public RoomType deleteRoomTypeById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId) {
+    public RoomTypeAdapter deleteRoomTypeById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId) {
         return roomTypeService.deleteRoomTypeById(roomTypeId);
     }
 

@@ -54,13 +54,13 @@ public class OrderService {
      * @return Orders
      * @throws RoomNotFoundException if room is not found by room id
      */
-    public Order createOrderByRoom(Long roomId, OrderAdapter orderAdapter) {
+    public OrderAdapter createOrderByRoom(Long roomId, OrderAdapter orderAdapter) {
         Room roomById = roomService.getRoomById(roomId);
         log.debug("Room by id is :{}", roomById);
         Order order = orderAdapter.toOrder();
         order.setRoom(roomById);
 
-        return checkingRequirementsOfOrderAndSaving(order);
+        return new OrderAdapter(checkingRequirementsOfOrderAndSaving(order));
     }
 
     /**
@@ -71,7 +71,7 @@ public class OrderService {
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    public Order updateOrderByRoomIdAndOrderId(Long roomId, Long orderId, OrderAdapter orderAdapter) {
+    public OrderAdapter updateOrderByRoomIdAndOrderId(Long roomId, Long orderId, OrderAdapter orderAdapter) {
         Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
         orderById.setDescription(orderAdapter.getDescription());
         orderById.setPeriodBegin(orderAdapter.getPeriodBegin());
@@ -86,7 +86,7 @@ public class OrderService {
             Order order = orderAdapter.toOrder();
             order.setId(orderId);
          */
-        return checkingRequirementsOfOrderAndSaving(orderById);
+        return new OrderAdapter(checkingRequirementsOfOrderAndSaving(orderById));
     }
 
     /**
@@ -114,17 +114,17 @@ public class OrderService {
     /**
      * @param orderId id of an order
      * @param roomId  provided roomId
-     * @return Orders
+     * @return OrderAdapter
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId and roomId is not found
      * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    public Order deleteOrderByRoomIdAndOrderId(Long roomId, Long orderId) {
+    public OrderAdapter deleteOrderByRoomIdAndOrderId(Long roomId, Long orderId) {
 
         Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
         log.debug("Order is :{}", orderById);
         orderRepository.deleteById(orderId);
 
-        return orderById;
+        return new OrderAdapter(orderById);
     }
 
 
@@ -162,6 +162,6 @@ public class OrderService {
     public Page<Order> getOrdersByRoomId(Long roomId, Pageable pageable) {
         Room roomById = roomService.getRoomById(roomId);
         log.debug("Room By ID is :{}", roomById);
-        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now(),pageable);
+        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now(), pageable);
     }
 }

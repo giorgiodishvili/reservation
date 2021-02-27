@@ -65,7 +65,7 @@ public class RoomTypeService {
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      * @throws RoomTypeIsUsedException   if room type is used
      */
-    public RoomType deleteRoomTypeById(Long roomTypeId) {
+    public RoomTypeAdapter deleteRoomTypeById(Long roomTypeId) {
 
         RoomType roomType = getRoomTypeById(roomTypeId);
 
@@ -75,7 +75,7 @@ public class RoomTypeService {
 
         roomTypeRepository.deleteById(roomTypeId);
 
-        return roomType;
+        return new RoomTypeAdapter(roomType);
     }
 
     /**
@@ -85,7 +85,7 @@ public class RoomTypeService {
      * @throws RoomTypeNotFoundException           if room type is not found by room type id
      * @throws RoomTypeLabelAlreadyExistsException if room type label already exists room type cant be updated
      */
-    public RoomType updateRoomTypeById(Long roomTypeId, RoomTypeAdapter roomTypeAdapter) {
+    public RoomTypeAdapter updateRoomTypeById(Long roomTypeId, RoomTypeAdapter roomTypeAdapter) {
 
         if (!roomTypeExistsById(roomTypeId)) {
             throw new RoomTypeNotFoundException();
@@ -97,7 +97,7 @@ public class RoomTypeService {
         RoomType roomType = roomTypeAdapter.toRoomType();
         roomType.setId(roomTypeId);
 
-        return roomTypeRepository.save(roomType);
+        return new RoomTypeAdapter(roomTypeRepository.save(roomType));
     }
 
     /**
@@ -105,11 +105,11 @@ public class RoomTypeService {
      * @return List of Rooms
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      */
-    public Page<Room> getAllRoomsByRoomTypeId(Long roomTypeId,Pageable pageable) {
+    public Page<Room> getAllRoomsByRoomTypeId(Long roomTypeId, Pageable pageable) {
         RoomType roomType = getRoomTypeById(roomTypeId);
 
         log.debug("Room type is :{}", roomType);
-        return roomRepository.findByRoomType(roomType,pageable);
+        return roomRepository.findByRoomType(roomType, pageable);
     }
 
     /**

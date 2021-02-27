@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.util.List;
 
 
 @RestController
@@ -42,23 +41,23 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/orders")
-    public Page<Order> getOrdersByRoom(@PathVariable("roomId") @Min(1) Long roomId,Pageable pageable) {
-        return orderService.getOrdersByRoomId(roomId,pageable);
+    public Page<Order> getOrdersByRoom(@PathVariable("roomId") @Min(1) Long roomId, Pageable pageable) {
+        return orderService.getOrdersByRoomId(roomId, pageable);
     }
 
     @PostMapping("/{roomId}/orders")
     @ResponseStatus(HttpStatus.CREATED)
-    public Order createOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid OrderAdapter orderAdapter) {
+    public OrderAdapter createOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid OrderAdapter orderAdapter) {
         return orderService.createOrderByRoom(roomId, orderAdapter);
     }
 
     @PutMapping("/{roomId}/orders/{orderId}")
-    public Order updateOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId, @RequestBody @Valid OrderAdapter orderAdapter) {
+    public OrderAdapter updateOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId, @RequestBody @Valid OrderAdapter orderAdapter) {
         return orderService.updateOrderByRoomIdAndOrderId(roomId, orderId, orderAdapter);
     }
 
     @DeleteMapping("/{roomId}/orders/{orderId}")
-    public Order deleteOrderByRoomAndOrderId(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId) {
+    public OrderAdapter deleteOrderByRoomAndOrderId(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId) {
         return orderService.deleteOrderByRoomIdAndOrderId(roomId, orderId);
     }
 

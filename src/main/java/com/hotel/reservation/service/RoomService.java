@@ -57,7 +57,7 @@ public class RoomService {
      * @throws RoomTypeNotFoundException       if room type of specified room  is null
      * @throws RoomLabelAlreadyExistsException if room label already exists than room cant be saved
      */
-    public Room createRoomByRoomType(Long roomTypeId, RoomAdapter roomAdapter) {
+    public RoomAdapter createRoomByRoomType(Long roomTypeId, RoomAdapter roomAdapter) {
         RoomType roomTypeById = roomTypeService.getRoomTypeById(roomTypeId);
 
         if (roomExistsByLabel(roomAdapter.getLabel())) {
@@ -67,7 +67,7 @@ public class RoomService {
         Room room = roomAdapter.toRoom();
         room.setRoomType(roomTypeById);
 
-        return roomRepo.save(room);
+        return new RoomAdapter(roomRepo.save(room));
     }
 
     /**
@@ -76,7 +76,7 @@ public class RoomService {
      * @throws RoomNotFoundException if label exists and as well id is not room id
      * @throws RoomIsBusyException   if Room is Busy
      */
-    public Room deleteRoomById(Long roomTypeId, Long roomId) {
+    public RoomAdapter deleteRoomById(Long roomTypeId, Long roomId) {
         Room room = getRoomByIdAndRoomTypeId(roomId, roomTypeId);
 
         if (orderRepository.existsByRoomAndPeriodEndGreaterThanEqual(room, LocalDate.now())) {
@@ -86,7 +86,7 @@ public class RoomService {
         roomRepo.deleteById(roomId);
         log.debug("Deleted Room :{}", room);
 
-        return room;
+        return new RoomAdapter(room);
     }
 
     public Room getRoomByIdAndRoomTypeId(Long roomId, Long roomTypeId) {
@@ -100,7 +100,7 @@ public class RoomService {
      * @throws RoomNotFoundException           if label exists and as well id is not room id
      * @throws RoomLabelAlreadyExistsException if room label exists
      */
-    public Room updateRoomByRoomTypeAndRoomId(Long roomTypeId, Long roomId, RoomAdapter roomAdapter) {
+    public RoomAdapter updateRoomByRoomTypeAndRoomId(Long roomTypeId, Long roomId, RoomAdapter roomAdapter) {
         if (!roomExistsByRoomId(roomId)) {
             throw new RoomNotFoundException();
         }
@@ -112,7 +112,7 @@ public class RoomService {
             throw new RoomLabelAlreadyExistsException();
         }
 
-        return roomRepo.save(room);
+        return new RoomAdapter(roomRepo.save(room));
     }
 
     /**
