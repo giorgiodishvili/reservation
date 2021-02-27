@@ -8,12 +8,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 
 public interface OrderRepository extends CrudRepository<Order, Long> {
     Page<Order> findAll(Pageable pageable);
+
     Page<Order> findAllByRoomAndPeriodEndGreaterThanEqual(Room room, LocalDate currentDate, Pageable pageable);
 
     boolean existsByRoomAndPeriodEndGreaterThanEqual(Room room, LocalDate currentDate);
