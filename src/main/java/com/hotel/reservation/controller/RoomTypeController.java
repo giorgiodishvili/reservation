@@ -7,13 +7,14 @@ import com.hotel.reservation.entity.RoomType;
 import com.hotel.reservation.service.RoomService;
 import com.hotel.reservation.service.RoomTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import java.util.List;
 
 @RestController
 @RequestMapping(value = "/room-type")
@@ -32,8 +33,8 @@ public class RoomTypeController {
 
 
     @GetMapping
-    public Iterable<RoomType> getRoomTypes() {
-        return roomTypeService.getAllRoomTypes();
+    public Page<RoomType> getRoomTypes(Pageable pageable) {
+        return roomTypeService.getAllRoomTypes(pageable);
     }
 
     @GetMapping("/{roomTypeId}")
@@ -42,13 +43,13 @@ public class RoomTypeController {
     }
 
     @GetMapping("/{roomTypeId}/rooms")
-    public List<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") @Min(1) Long roomTypeId) {
-        return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId);
+    public Page<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") @Min(1) Long roomTypeId,Pageable pageable) {
+        return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId,pageable);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public RoomType createRoomType(@RequestBody @Valid RoomTypeAdapter roomTypeAdapter) {
+    public RoomTypeAdapter createRoomType(@RequestBody @Valid RoomTypeAdapter roomTypeAdapter) {
         return roomTypeService.createRoomType(roomTypeAdapter);
     }
 

@@ -22,7 +22,7 @@ public class RoomType {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "RoomType_SEQ")
     @SequenceGenerator(name = "RoomType_SEQ", sequenceName = "RoomType_ROOMS")
     @Column(name = "ID", updatable = false)
-    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY)
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Long id;
 
     @NotNull(message = "Label mustn't be null")

@@ -3,6 +3,8 @@ package com.hotel.reservation.controller;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,8 +25,8 @@ public class OrderController {
     }
 
     @GetMapping
-    public Iterable<Order> getAllOrders() {
-        return orderService.getAllOrders();
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderService.getAllOrders(pageable);
     }
 
     @GetMapping("/{orderId}")

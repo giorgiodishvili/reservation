@@ -11,9 +11,9 @@ import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -32,8 +32,8 @@ public class RoomTypeService {
     /**
      * @return Iterable of Room Type
      */
-    public Iterable<RoomType> getAllRoomTypes() {
-        return roomTypeRepository.findAll();
+    public Page<RoomType> getAllRoomTypes(Pageable pageable) {
+        return roomTypeRepository.findAll(pageable);
     }
 
     /**
@@ -51,12 +51,12 @@ public class RoomTypeService {
      * @throws RoomTypeIdMustBeZeroOrNullException if room type id is not zero or null
      * @throws RoomTypeLabelAlreadyExistsException if room type label already exists room type cant be added
      */
-    public RoomType createRoomType(RoomTypeAdapter roomTypeAdapter) {
+    public RoomTypeAdapter createRoomType(RoomTypeAdapter roomTypeAdapter) {
 
         if (roomTypeExistsByLabel(roomTypeAdapter.getLabel())) {
             throw new RoomTypeLabelAlreadyExistsException();
         }
-        return roomTypeRepository.save(roomTypeAdapter.toRoomType());
+        return new RoomTypeAdapter(roomTypeRepository.save(roomTypeAdapter.toRoomType()));
     }
 
     /**
@@ -105,11 +105,11 @@ public class RoomTypeService {
      * @return List of Rooms
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      */
-    public List<Room> getAllRoomsByRoomTypeId(Long roomTypeId) {
+    public Page<Room> getAllRoomsByRoomTypeId(Long roomTypeId,Pageable pageable) {
         RoomType roomType = getRoomTypeById(roomTypeId);
 
         log.debug("Room type is :{}", roomType);
-        return roomRepository.findByRoomType(roomType);
+        return roomRepository.findByRoomType(roomType,pageable);
     }
 
     /**

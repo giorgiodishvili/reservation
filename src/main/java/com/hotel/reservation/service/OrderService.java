@@ -10,13 +10,13 @@ import com.hotel.reservation.exception.room.RoomIdNotFoundException;
 import com.hotel.reservation.exception.room.RoomIsBusyException;
 import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
-import com.hotel.reservation.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.List;
 
 
 @Service
@@ -24,21 +24,19 @@ import java.util.List;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final RoomRepository roomRepo;
     private final RoomService roomService;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, RoomRepository roomRepo, RoomService roomService) {
+    public OrderService(OrderRepository orderRepository, RoomService roomService) {
         this.orderRepository = orderRepository;
-        this.roomRepo = roomRepo;
         this.roomService = roomService;
     }
 
     /**
      * @return Iterable of Orders
      */
-    public Iterable<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public Page<Order> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable);
     }
 
     /**
@@ -161,9 +159,9 @@ public class OrderService {
      * @return List of order
      * @throws RoomNotFoundException if room is not found by <code>roomId</code>
      */
-    public List<Order> getOrdersByRoomId(Long roomId) {
+    public Page<Order> getOrdersByRoomId(Long roomId, Pageable pageable) {
         Room roomById = roomService.getRoomById(roomId);
         log.debug("Room By ID is :{}", roomById);
-        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now());
+        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now(),pageable);
     }
 }

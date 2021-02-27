@@ -3,6 +3,8 @@ package com.hotel.reservation.repository;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
@@ -11,8 +13,8 @@ import java.util.Optional;
 
 
 public interface OrderRepository extends CrudRepository<Order, Long> {
-
-    List<Order> findAllByRoomAndPeriodEndGreaterThanEqual(Room room, LocalDate currentDate);
+    Page<Order> findAll(Pageable pageable);
+    Page<Order> findAllByRoomAndPeriodEndGreaterThanEqual(Room room, LocalDate currentDate, Pageable pageable);
 
     boolean existsByRoomAndPeriodEndGreaterThanEqual(Room room, LocalDate currentDate);
 

@@ -6,6 +6,8 @@ import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.service.OrderService;
 import com.hotel.reservation.service.RoomService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +32,8 @@ public class RoomController {
     }
 
     @GetMapping
-    public Iterable<Room> getRooms() {
-        return roomService.getRooms();
+    public Page<Room> getRooms(Pageable pageable) {
+        return roomService.getRooms(pageable);
     }
 
     @GetMapping("/{roomId}")
@@ -40,8 +42,8 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/orders")
-    public List<Order> getOrdersByRoom(@PathVariable("roomId") @Min(1) Long roomId) {
-        return orderService.getOrdersByRoomId(roomId);
+    public Page<Order> getOrdersByRoom(@PathVariable("roomId") @Min(1) Long roomId,Pageable pageable) {
+        return orderService.getOrdersByRoomId(roomId,pageable);
     }
 
     @PostMapping("/{roomId}/orders")
