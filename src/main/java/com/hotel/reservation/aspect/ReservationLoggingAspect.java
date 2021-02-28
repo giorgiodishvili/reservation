@@ -45,7 +45,7 @@ public class ReservationLoggingAspect {
             pointcut = "forAppFlow()",
             returning = "theResult"
     )
-    public void afterReturning(JoinPoint theJoinPoint,Object theResult){
+    public void afterReturning(JoinPoint theJoinPoint, Object theResult) {
         //display method we are returniing from
         log.trace("@After Returning from method : {}", theJoinPoint.getSignature().toShortString());
         //display data returned
