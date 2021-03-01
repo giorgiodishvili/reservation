@@ -1,6 +1,6 @@
 package com.hotel.reservation.registration.token;
 
-import com.hotel.reservation.appuser.AppUser;
+import com.hotel.reservation.entity.AppUser;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

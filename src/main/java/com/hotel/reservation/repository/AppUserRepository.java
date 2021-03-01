@@ -1,6 +1,7 @@
-package com.hotel.reservation.appuser;
+package com.hotel.reservation.repository;
 
 
+import com.hotel.reservation.entity.AppUser;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 
 @Repository
 @Transactional(readOnly = true)
-public interface UserRepository extends CrudRepository<AppUser, Long> {
+public interface AppUserRepository extends CrudRepository<AppUser, Long> {
 
     Optional<AppUser> findByEmail(String email);
 

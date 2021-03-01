@@ -1,4 +1,4 @@
-package com.hotel.reservation.security;
+package com.hotel.reservation.config.security.encoder;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

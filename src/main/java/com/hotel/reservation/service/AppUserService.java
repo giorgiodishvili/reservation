@@ -1,7 +1,9 @@
-package com.hotel.reservation.appuser;
+package com.hotel.reservation.service;
 
+import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.registration.token.ConfirmationToken;
 import com.hotel.reservation.registration.token.ConfirmationTokenService;
+import com.hotel.reservation.repository.AppUserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -17,19 +19,19 @@ import java.util.UUID;
 public class AppUserService implements UserDetailsService {
     private final static String USER_NOT_FOUND_MESSAGE =
             "user with email %s not found";
-    private final UserRepository userRepository;
+    private final AppUserRepository appUserRepository;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ConfirmationTokenService confirmationTokenService;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(email).orElseThrow(() ->
+        return appUserRepository.findByEmail(email).orElseThrow(() ->
                 new UsernameNotFoundException(String.format(USER_NOT_FOUND_MESSAGE, email)));
     }
 
     public String signUpUser(AppUser appUser) {
-        boolean userExists = userRepository.findByEmail(appUser.getEmail()).isPresent();
+        boolean userExists = appUserRepository.findByEmail(appUser.getEmail()).isPresent();
 
         if (userExists) {
             throw new IllegalStateException("email already taken");
@@ -38,7 +40,7 @@ public class AppUserService implements UserDetailsService {
 
         appUser.setPassword(encodedPassword);
 
-        userRepository.save(appUser);
+        appUserRepository.save(appUser);
 
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken = new ConfirmationToken(
@@ -54,6 +56,6 @@ public class AppUserService implements UserDetailsService {
 
 
     public int enableAppUser(String email) {
-        return userRepository.enableAppUser(email);
+        return appUserRepository.enableAppUser(email);
     }
 }
