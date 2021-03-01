@@ -1,11 +1,11 @@
 package com.hotel.reservation.registration;
 
-import com.hotel.reservation.appuser.AppUser;
-import com.hotel.reservation.appuser.AppUserRole;
-import com.hotel.reservation.appuser.AppUserService;
+import com.hotel.reservation.config.security.authority.AppUserRole;
 import com.hotel.reservation.email.EmailSender;
+import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.registration.token.ConfirmationToken;
 import com.hotel.reservation.registration.token.ConfirmationTokenService;
+import com.hotel.reservation.service.AppUserService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
