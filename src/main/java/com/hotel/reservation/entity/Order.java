@@ -46,6 +46,12 @@ public class Order {
     @Column(name = "DESCRIPTION")
     private String description;
 
+    @ManyToOne
+    @JoinColumn(name = "APP_USER_ID", nullable = false)
+    @NotNull(message = "uSER FIELD SHOULD NOT BE EMPTY")
+    private AppUser appUser;
+
+
     @PrePersist
     public void initializeUUID() {
         if (this.uuid == null) {

@@ -1,16 +1,17 @@
-package com.hotel.reservation.appuser;
+package com.hotel.reservation.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.hotel.reservation.config.security.authority.AppUserRole;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -40,6 +41,10 @@ public class AppUser implements UserDetails {
     private Boolean locked = false;
     private Boolean enabled = false;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "appUser", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private Set<Order> orders;
+
     public AppUser(String firstName, String lastName, String email, String password, AppUserRole appUserRole) {
         this.firstName = firstName;
         this.lastName = lastName;
@@ -50,8 +55,7 @@ public class AppUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(appUserRole.name());
-        return Collections.singleton(authority);
+        return appUserRole.getAuthorities();
     }
 
     @Override
