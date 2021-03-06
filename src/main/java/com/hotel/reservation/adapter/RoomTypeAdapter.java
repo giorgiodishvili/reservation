@@ -34,7 +34,7 @@ public class RoomTypeAdapter {
     @NotNull(message = "label mustn't be null")
     @NotEmpty(message = "label mustn't be empty")
     public String getLabel() {
-        return roomType.getDescription();
+        return roomType.getLabel();
     }
 
     public String getDescription() {
@@ -51,7 +51,7 @@ public class RoomTypeAdapter {
     public void setLabel(@NotNull(message = "label mustn't be null")
                          @NotEmpty(message = "label mustn't be empty")
                                  String label) {
-        roomType.setDescription(label);
+        roomType.setLabel(label);
     }
 
     public void setDescription(String description) {
