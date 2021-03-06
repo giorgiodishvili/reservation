@@ -40,8 +40,8 @@ public class RoomTypeController {
     }
 
     @GetMapping("/{roomTypeId}")
-    public RoomType getRoomTypeById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId) {
-        return roomTypeService.getRoomTypeById(roomTypeId);
+    public RoomTypeAdapter getRoomTypeById(@PathVariable("roomTypeId") @Min(1) Long roomTypeId) {
+        return new RoomTypeAdapter(roomTypeService.getRoomTypeById(roomTypeId));
     }
 
     @GetMapping("/{roomTypeId}/rooms")
