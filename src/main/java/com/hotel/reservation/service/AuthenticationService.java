@@ -26,9 +26,9 @@ public class AuthenticationService {
 
     public AuthResponse login(AuthRequest authRequest) {
         try {
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
-            AppUser user = appUserRepository.findByEmail(authRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("Username not found exception"));
-            String token = jwtTokenProvider.createToken(authRequest.getUsername(), user.getAppUserRole().name());
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getEmail(), authRequest.getPassword()));
+            AppUser user = appUserRepository.findByEmail(authRequest.getEmail()).orElseThrow(() -> new UsernameNotFoundException("Email not found exception"));
+            String token = jwtTokenProvider.createToken(authRequest.getEmail(), user.getAppUserRole().name());
             return new AuthResponse(token);
         } catch (AuthenticationException e) {
             throw new InvalidEmailOrPasswordException();
