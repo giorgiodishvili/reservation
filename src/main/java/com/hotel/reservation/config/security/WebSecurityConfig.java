@@ -1,18 +1,17 @@
 package com.hotel.reservation.config.security;
 
 import com.hotel.reservation.config.security.authority.AppUserPermission;
-import com.hotel.reservation.service.AppUserService;
+import com.hotel.reservation.config.security.jwt.JwtConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 
 //TODO : ADD ant matchers, add logout support, add @PreAuthorize to controllers,
@@ -38,52 +37,36 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             // other public endpoints of your API may be appended to this array
     };
 
-    private final AppUserService appUserService;
-    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private final JwtConfigurer jwtConfigurer;
 
     @Autowired
-    public WebSecurityConfig(AppUserService appUserService, BCryptPasswordEncoder bCryptPasswordEncoder) {
-        this.appUserService = appUserService;
-        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+    public WebSecurityConfig(JwtConfigurer jwtConfigurer) {
+        this.jwtConfigurer = jwtConfigurer;
     }
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf().disable()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
                 .authorizeRequests()
                 .antMatchers(SWAGGER_WHITELIST).permitAll()
                 .antMatchers(HttpMethod.GET, "/api/orders/**").hasAnyAuthority(AppUserPermission.ORDERS_READ.getPermission())
-//                        .antMatchers(HttpMethod.POST,"/api/**").hasAnyAuthority(AppUserPermission.ORDERS_WRITE.getPermission(),
-//                                                                                                AppUserPermission.ROOM_TYPE_WRITE.getPermission(),
-//                                                                                                AppUserPermission.ROOM_WRITE.getPermission()  )
-//                        .antMatchers(HttpMethod.PUT,"/api/**").hasAnyAuthority(AppUserPermission.ORDERS_WRITE.getPermission(),
-//                                                                                                AppUserPermission.ROOM_TYPE_WRITE.getPermission(),
-//                                                                                                AppUserPermission.ROOM_WRITE.getPermission()  )
-//                        .antMatchers(HttpMethod.DELETE,"/api/**").hasAnyAuthority(AppUserPermission.ORDERS_WRITE.getPermission(),
-//                                                                                                AppUserPermission.ROOM_TYPE_WRITE.getPermission(),
-//                                                                                                AppUserPermission.ROOM_WRITE.getPermission()  )
+                .antMatchers("/api/auth/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
-//                        .antMatchers("/api/registration/**").permitAll()
+                .antMatchers("/api/registration/**").permitAll()
                 .antMatchers("/").permitAll()
                 .anyRequest()
                 .authenticated().and()
-                .httpBasic();
+                .apply(jwtConfigurer);
     }
 
     @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.authenticationProvider(daoAuthenticationProvider());
-    }
-
     @Bean
-    public DaoAuthenticationProvider daoAuthenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(bCryptPasswordEncoder);
-        provider.setUserDetailsService(appUserService);
-
-        return provider;
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        return super.authenticationManagerBean();
     }
-
 
 }
