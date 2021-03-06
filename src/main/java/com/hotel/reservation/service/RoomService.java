@@ -67,6 +67,7 @@ public class RoomService {
         Room room = roomAdapter.toRoom();
         room.setRoomType(roomTypeById);
 
+
         return new RoomAdapter(roomRepo.save(room));
     }
 
