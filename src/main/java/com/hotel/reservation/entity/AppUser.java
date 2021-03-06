@@ -2,6 +2,7 @@ package com.hotel.reservation.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotel.reservation.config.security.authority.AppUserRole;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,6 +11,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.Set;
 
@@ -18,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "App_User")
+@Table(name = "User")
 public class AppUser implements UserDetails {
 
     @Id
@@ -31,14 +35,29 @@ public class AppUser implements UserDetails {
             strategy = GenerationType.SEQUENCE,
             generator = "user_sequence"
     )
+    @Column(name = "ID", updatable = false)
+    @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
     private Long id;
 
+    @NotNull(message = "firstName mustn't be null")
+    @NotEmpty(message = "firstName mustn't be empty")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
+    @NotNull(message = "lastName mustn't be null")
+    @Column(name = "last_name", nullable = false)
+    @NotEmpty(message = "lastName mustn't be empty")
     private String lastName;
 
+    @NotNull(message = "email mustn't be null")
+    @Column(name = "email", nullable = false, unique = true)
+    @NotEmpty(message = "email mustn't be empty")
+    @Email
     private String email;
 
+    @NotNull(message = "password mustn't be null")
+    @Column(name = "password", nullable = false)
+    @NotEmpty(message = "password mustn't be empty")
     private String password;
 
     @Enumerated(EnumType.STRING)
