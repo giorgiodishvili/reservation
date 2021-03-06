@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public enum AppUserRole {
-    USER(Set.of(AppUserPermission.ROOM_READ, AppUserPermission.ROOM_TYPE_READ)),
+    USER(Set.of(AppUserPermission.ROOM_READ, AppUserPermission.ROOM_TYPE_READ, AppUserPermission.ORDERS_READ, AppUserPermission.ORDERS_WRITE)),
 
     ADMIN(Set.of(AppUserPermission.ORDERS_WRITE, AppUserPermission.ROOM_WRITE,
             AppUserPermission.ROOM_TYPE_WRITE, AppUserPermission.ORDERS_READ,
