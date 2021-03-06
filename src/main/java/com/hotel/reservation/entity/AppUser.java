@@ -2,7 +2,7 @@ package com.hotel.reservation.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hotel.reservation.config.security.authority.AppUserRole;
-import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,8 +15,8 @@ import java.util.Set;
 
 @Getter
 @Setter
-@EqualsAndHashCode
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "App_User")
 public class AppUser implements UserDetails {
@@ -32,13 +32,20 @@ public class AppUser implements UserDetails {
             generator = "user_sequence"
     )
     private Long id;
+
     private String firstName;
+
     private String lastName;
+
     private String email;
+
     private String password;
+
     @Enumerated(EnumType.STRING)
     private AppUserRole appUserRole;
+
     private Boolean locked = false;
+
     private Boolean enabled = false;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "appUser", fetch = FetchType.LAZY)
