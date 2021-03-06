@@ -1,6 +1,7 @@
 package com.hotel.reservation.controller;
 
 import com.hotel.reservation.adapter.OrderAdapter;
+import com.hotel.reservation.adapter.RoomAdapter;
 import com.hotel.reservation.config.security.authority.Authority;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import java.util.Map;
 
 
 @RestController
@@ -33,15 +35,13 @@ public class RoomController {
     }
 
     @GetMapping
-    @PreAuthorize("permitAll()")
     public Page<Room> getRooms(Pageable pageable) {
         return roomService.getRooms(pageable);
     }
 
     @GetMapping("/{roomId}")
-    @PreAuthorize("permitAll()")
-    public Room getRoomById(@PathVariable("roomId") @Min(1) Long roomId) {
-        return roomService.getRoomById(roomId);
+    public RoomAdapter getRoomById(@PathVariable("roomId") @Min(1) Long roomId) {
+        return new RoomAdapter(roomService.getRoomById(roomId));
     }
 
     @GetMapping("/{roomId}/orders")
@@ -53,15 +53,16 @@ public class RoomController {
     @PostMapping("/{roomId}/orders")
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize(Authority.Order.WRITE)
-    public OrderAdapter createOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid OrderAdapter orderAdapter) {
-        return orderService.createOrderByRoom(roomId, orderAdapter);
+    public OrderAdapter createOrderByRoom(@RequestHeader Map<String, String> headers, @PathVariable("roomId") @Min(1) Long roomId, @RequestBody @Valid OrderAdapter orderAdapter) {
+        String token = headers.get("Authorization");
+        return orderService.createOrderByRoom(token, roomId, orderAdapter);
     }
 
     @PutMapping("/{roomId}/orders/{orderId}")
     @PreAuthorize(Authority.Order.UPDATE)
-//    @PostAuthorize("returnObject == principal.id")
-    public OrderAdapter updateOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId, @RequestBody @Valid OrderAdapter orderAdapter) {
-        return orderService.updateOrderByRoomIdAndOrderId(roomId, orderId, orderAdapter);
+    public OrderAdapter updateOrderByRoom(@RequestHeader Map<String, String> headers, @PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId, @RequestBody @Valid OrderAdapter orderAdapter) {
+        String token = headers.get("Authorization");
+        return orderService.updateOrderByRoomIdAndOrderId(token, roomId, orderId, orderAdapter);
     }
 
     @DeleteMapping("/{roomId}/orders/{orderId}")

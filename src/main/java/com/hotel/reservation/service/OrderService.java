@@ -2,6 +2,8 @@ package com.hotel.reservation.service;
 
 
 import com.hotel.reservation.adapter.OrderAdapter;
+import com.hotel.reservation.config.security.jwt.JwtTokenProvider;
+import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.exception.order.OrderNotFoundException;
@@ -14,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,12 +28,16 @@ import java.time.LocalDate;
 public class OrderService {
 
     private final OrderRepository orderRepository;
+    private final AppUserService appUserService;
     private final RoomService roomService;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Autowired
-    public OrderService(OrderRepository orderRepository, RoomService roomService) {
+    public OrderService(OrderRepository orderRepository, AppUserService appUserService, RoomService roomService, JwtTokenProvider jwtTokenProvider) {
         this.orderRepository = orderRepository;
+        this.appUserService = appUserService;
         this.roomService = roomService;
+        this.jwtTokenProvider = jwtTokenProvider;
     }
 
     /**
@@ -44,26 +52,34 @@ public class OrderService {
      * @return Orders
      * @throws OrderNotFoundException if orderId is not found
      */
+    @PostAuthorize("returnObject == null ?: returnObject.getAppUser().getUsername() == principal.username")
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
     }
 
     /**
+     * @param token        extracted authorization token from header
      * @param roomId       provided room id
      * @param orderAdapter provided order
      * @return Orders
      * @throws RoomNotFoundException if room is not found by room id
      */
-    public OrderAdapter createOrderByRoom(Long roomId, OrderAdapter orderAdapter) {
+    public OrderAdapter createOrderByRoom(String token, Long roomId, OrderAdapter orderAdapter) {
         Room roomById = roomService.getRoomById(roomId);
         log.debug("Room by id is :{}", roomById);
         Order order = orderAdapter.toOrder();
         order.setRoom(roomById);
 
+        String username = jwtTokenProvider.getUsername(token);
+        UserDetails userDetails = appUserService.loadUserByUsername(username);
+
+        order.setAppUser((AppUser) userDetails);
+
         return new OrderAdapter(checkingRequirementsOfOrderAndSaving(order));
     }
 
     /**
+     * @param token        extracted authorization token from header
      * @param roomId       provided roomId
      * @param orderId      id of an order
      * @param orderAdapter updated version of a single order
@@ -71,11 +87,15 @@ public class OrderService {
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    public OrderAdapter updateOrderByRoomIdAndOrderId(Long roomId, Long orderId, OrderAdapter orderAdapter) {
+    @PostAuthorize("returnObject == null ?: returnObject.getUser() == principal.username")
+    public OrderAdapter updateOrderByRoomIdAndOrderId(String token, Long roomId, Long orderId, OrderAdapter orderAdapter) {
         Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
         orderById.setDescription(orderAdapter.getDescription());
         orderById.setPeriodBegin(orderAdapter.getPeriodBegin());
         orderById.setPeriodEnd(orderAdapter.getPeriodEnd());
+        String username = jwtTokenProvider.getUsername(token);
+        UserDetails userDetails = appUserService.loadUserByUsername(username);
+        orderById.setAppUser((AppUser) userDetails);
 
         /*
         alternative of the code
