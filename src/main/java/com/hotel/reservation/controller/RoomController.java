@@ -59,6 +59,7 @@ public class RoomController {
 
     @PutMapping("/{roomId}/orders/{orderId}")
     @PreAuthorize(Authority.Order.UPDATE)
+//    @PostAuthorize("returnObject == principal.id")
     public OrderAdapter updateOrderByRoom(@PathVariable("roomId") @Min(1) Long roomId, @PathVariable("orderId") @Min(1) Long orderId, @RequestBody @Valid OrderAdapter orderAdapter) {
         return orderService.updateOrderByRoomIdAndOrderId(roomId, orderId, orderAdapter);
     }

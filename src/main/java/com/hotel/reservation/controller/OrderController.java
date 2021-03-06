@@ -6,6 +6,7 @@ import com.hotel.reservation.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -33,13 +34,13 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize(Authority.Order.READ)
+    @PostAuthorize("returnObject.appUser.getId() == principal.id")
     public Order getOrderById(@PathVariable("orderId") @Min(1) Long orderId) {
         return orderService.getOrderById(orderId);
     }
 
     @GetMapping("/checkOrder")
-    @PreAuthorize("permitAll()")
     public boolean checkOrder(@RequestParam("roomLabel") String roomLabel, @RequestParam("uuid") @Size(min = 36, max = 36) String UUID) {
         return orderService.checkOrder(roomLabel, UUID);
     }
