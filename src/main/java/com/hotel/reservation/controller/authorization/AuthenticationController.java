@@ -1,4 +1,4 @@
-package com.hotel.reservation.controller;
+package com.hotel.reservation.controller.authorization;
 
 import com.hotel.reservation.adapter.authentication.AuthRequest;
 import com.hotel.reservation.adapter.authentication.AuthResponse;
