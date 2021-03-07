@@ -1,5 +1,6 @@
 package com.hotel.reservation.service;
 
+import com.hotel.reservation.adapter.AppUserAdapter;
 import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.registration.token.ConfirmationToken;
 import com.hotel.reservation.registration.token.ConfirmationTokenService;
@@ -59,5 +60,9 @@ public class AppUserService implements UserDetailsService {
 
     public int enableAppUser(String email) {
         return appUserRepository.enableAppUser(email);
+    }
+
+    public AppUserAdapter findUserById(Long userId) {
+        return new AppUserAdapter(appUserRepository.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found exception")));
     }
 }
