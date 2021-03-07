@@ -1,8 +1,6 @@
 package com.hotel.reservation.adapter;
 
-import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.entity.Order;
-import com.hotel.reservation.entity.Room;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotNull;
@@ -60,10 +58,10 @@ public class OrderAdapter {
     public void setId(Long id) {
     }
 
-    public void setUser(AppUser user) {
+    public void setUser(String username) {
     }
 
-    public void setRoom(Room room) {
+    public void setRoom(Long roomId) {
     }
 
     public void setPeriodBegin(@NotNull(message = "Begin Period mustn't be null") LocalDate periodBegin) {

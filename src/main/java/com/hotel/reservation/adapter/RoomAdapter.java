@@ -1,7 +1,6 @@
 package com.hotel.reservation.adapter;
 
 import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.entity.RoomType;
 import io.swagger.annotations.ApiModelProperty;
 
 import javax.validation.constraints.NotEmpty;
@@ -54,7 +53,7 @@ public class RoomAdapter {
     public void setId(Long id) {
     }
 
-    public void setRoomType(RoomType roomType) {
+    public void setRoomType(Long roomTypeId) {
     }
 
     public void setLabel(String label) {
