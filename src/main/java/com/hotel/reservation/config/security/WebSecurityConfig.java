@@ -1,6 +1,5 @@
 package com.hotel.reservation.config.security;
 
-import com.hotel.reservation.config.security.authority.AppUserPermission;
 import com.hotel.reservation.config.security.jwt.JwtConfigurer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -53,7 +52,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests()
                 .antMatchers(SWAGGER_WHITELIST).permitAll()
-                .antMatchers(HttpMethod.GET, "/api/orders/**").hasAnyAuthority(AppUserPermission.ORDERS_READ.getPermission())
+//                .antMatchers(HttpMethod.GET, "/api/orders/**").hasAnyAuthority(AppUserPermission.ORDERS_READ.getPermission())
                 .antMatchers("/api/registration/**").permitAll()
                 .antMatchers("/api/auth/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/api/**").permitAll()
