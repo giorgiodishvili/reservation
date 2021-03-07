@@ -3,21 +3,20 @@ package com.hotel.reservation.repository;
 import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 
 public interface RoomRepository extends CrudRepository<Room, Long> {
 
-    Page<Room> findAll(Pageable pageable);
+    List<Room> findAll();
 
     boolean existsByRoomType(RoomType roomType);
 
-    Page<Room> findByRoomType(RoomType roomType, Pageable pageable);
+    List<Room> findByRoomType(RoomType roomType);
 
     Optional<Room> findByLabel(@Param("Label") String label);
 

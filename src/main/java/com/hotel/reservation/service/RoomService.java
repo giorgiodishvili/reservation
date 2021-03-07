@@ -11,11 +11,12 @@ import com.hotel.reservation.repository.OrderRepository;
 import com.hotel.reservation.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -36,10 +37,13 @@ public class RoomService {
 
 
     /**
-     * @return Iterable of Room
+     * @return Page of Room
      */
-    public Page<Room> getRooms(Pageable pageable) {
-        return roomRepo.findAll(pageable);
+    public List<RoomAdapter> getRooms(Pageable pageable) {
+        return roomRepo.findAll()
+                .stream()
+                .map(RoomAdapter::new)
+                .collect(Collectors.toList());
     }
 
     /**

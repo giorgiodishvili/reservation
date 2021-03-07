@@ -1,7 +1,7 @@
 package com.hotel.reservation.service;
 
+import com.hotel.reservation.adapter.RoomAdapter;
 import com.hotel.reservation.adapter.RoomTypeAdapter;
-import com.hotel.reservation.entity.Room;
 import com.hotel.reservation.entity.RoomType;
 import com.hotel.reservation.exception.type.RoomTypeIdMustBeZeroOrNullException;
 import com.hotel.reservation.exception.type.RoomTypeIsUsedException;
@@ -11,9 +11,10 @@ import com.hotel.reservation.repository.RoomRepository;
 import com.hotel.reservation.repository.RoomTypeRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -32,8 +33,11 @@ public class RoomTypeService {
     /**
      * @return Iterable of Room Type
      */
-    public Page<RoomType> getAllRoomTypes(Pageable pageable) {
-        return roomTypeRepository.findAll(pageable);
+    public List<RoomTypeAdapter> getAllRoomTypes() {
+        return roomTypeRepository.findAll()
+                .stream()
+                .map(RoomTypeAdapter::new)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -56,6 +60,9 @@ public class RoomTypeService {
         if (roomTypeExistsByLabel(roomTypeAdapter.getLabel())) {
             throw new RoomTypeLabelAlreadyExistsException();
         }
+
+        System.out.println("========>" + roomTypeAdapter.getLabel());
+
         return new RoomTypeAdapter(roomTypeRepository.save(roomTypeAdapter.toRoomType()));
     }
 
@@ -105,11 +112,14 @@ public class RoomTypeService {
      * @return List of Rooms
      * @throws RoomTypeNotFoundException if room type is not found by room type id
      */
-    public Page<Room> getAllRoomsByRoomTypeId(Long roomTypeId, Pageable pageable) {
+    public List<RoomAdapter> getAllRoomsByRoomTypeId(Long roomTypeId) {
         RoomType roomType = getRoomTypeById(roomTypeId);
 
         log.debug("Room type is :{}", roomType);
-        return roomRepository.findByRoomType(roomType, pageable);
+        return roomRepository.findByRoomType(roomType)
+                .stream()
+                .map(RoomAdapter::new)
+                .collect(Collectors.toList());
     }
 
     /**

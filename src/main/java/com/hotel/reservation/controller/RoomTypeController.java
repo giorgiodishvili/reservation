@@ -1,10 +1,9 @@
 package com.hotel.reservation.controller;
 
+import com.hotel.reservation.adapter.ListAdapter;
 import com.hotel.reservation.adapter.RoomAdapter;
 import com.hotel.reservation.adapter.RoomTypeAdapter;
 import com.hotel.reservation.config.security.authority.Authority;
-import com.hotel.reservation.entity.Room;
-import com.hotel.reservation.entity.RoomType;
 import com.hotel.reservation.service.RoomService;
 import com.hotel.reservation.service.RoomTypeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +34,9 @@ public class RoomTypeController {
 
 
     @GetMapping
-    public Page<RoomType> getRoomTypes(Pageable pageable) {
-        return roomTypeService.getAllRoomTypes(pageable);
+    public Page<RoomTypeAdapter> getRoomTypes(Pageable pageable) {
+        return ListAdapter.createPageFromList(roomTypeService.getAllRoomTypes(), pageable);
+
     }
 
     @GetMapping("/{roomTypeId}")
@@ -45,8 +45,8 @@ public class RoomTypeController {
     }
 
     @GetMapping("/{roomTypeId}/rooms")
-    public Page<Room> getRoomsByRoomTypeId(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, Pageable pageable) {
-        return roomTypeService.getAllRoomsByRoomTypeId(roomTypeId, pageable);
+    public Page<RoomAdapter> getRoomsByRoomTypeId(@PathVariable("roomTypeId") @Min(1) Long roomTypeId, Pageable pageable) {
+        return ListAdapter.createPageFromList(roomTypeService.getAllRoomsByRoomTypeId(roomTypeId), pageable);
     }
 
     @PostMapping

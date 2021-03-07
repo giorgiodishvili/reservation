@@ -1,7 +1,9 @@
 package com.hotel.reservation.service;
 
 
+import com.hotel.reservation.adapter.AppUserAdapter;
 import com.hotel.reservation.adapter.OrderAdapter;
+import com.hotel.reservation.config.security.authority.AppUserRole;
 import com.hotel.reservation.config.security.jwt.JwtTokenProvider;
 import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.entity.Order;
@@ -14,13 +16,14 @@ import com.hotel.reservation.exception.room.RoomNotFoundException;
 import com.hotel.reservation.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PostAuthorize;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -41,45 +44,56 @@ public class OrderService {
     }
 
     /**
-     * @return Iterable of Orders
+     * @return List of Orders
      */
-    public Page<Order> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable);
+    public List<OrderAdapter> getAllOrders(AppUser appUser) {
+        List<Order> all;
+        if (appUser.getAppUserRole() == AppUserRole.ROLE_ADMIN) {
+            return orderRepository.findAll().stream()
+                    .map(OrderAdapter::new)
+                    .collect(Collectors.toList());
+        }
+
+        return findAllOrdersByUser(appUser.getId());
+
+
     }
 
     /**
+     *
+     * @param user    authenticated user
      * @param orderId id of an order
      * @return Orders
      * @throws OrderNotFoundException if orderId is not found
      */
-    @PostAuthorize("returnObject == null ?: returnObject.getAppUser().getUsername() == principal.username")
-    public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new);
+    public OrderAdapter getOrderById(AppUser user, Long orderId) {
+        OrderAdapter orderAdapter = new OrderAdapter(orderRepository.findById(orderId).orElseThrow(OrderNotFoundException::new));
+        if (user.getAppUserRole() == AppUserRole.ROLE_ADMIN || user.getUsername().equals(orderAdapter.getUser())) {
+            return orderAdapter;
+        }
+
+        throw new UsernameNotFoundException("This account is not authorized to view the data");
     }
 
     /**
-     * @param token        extracted authorization token from header
+     * @param user         extracted appUser
      * @param roomId       provided room id
      * @param orderAdapter provided order
      * @return Orders
      * @throws RoomNotFoundException if room is not found by room id
      */
-    public OrderAdapter createOrderByRoom(String token, Long roomId, OrderAdapter orderAdapter) {
+    public OrderAdapter createOrderByRoom(AppUser user, Long roomId, OrderAdapter orderAdapter) {
         Room roomById = roomService.getRoomById(roomId);
         log.debug("Room by id is :{}", roomById);
         Order order = orderAdapter.toOrder();
         order.setRoom(roomById);
-
-        String username = jwtTokenProvider.getUsername(token);
-        UserDetails userDetails = appUserService.loadUserByUsername(username);
-
-        order.setAppUser((AppUser) userDetails);
+        order.setAppUser(user);
 
         return new OrderAdapter(checkingRequirementsOfOrderAndSaving(order));
     }
 
     /**
-     * @param token        extracted authorization token from header
+     * @param appUser      extracted app user
      * @param roomId       provided roomId
      * @param orderId      id of an order
      * @param orderAdapter updated version of a single order
@@ -87,16 +101,22 @@ public class OrderService {
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId is not found
      * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    @PostAuthorize("returnObject == null ?: returnObject.getUser() == principal.username")
-    public OrderAdapter updateOrderByRoomIdAndOrderId(String token, Long roomId, Long orderId, OrderAdapter orderAdapter) {
+    public OrderAdapter updateOrderByRoomIdAndOrderId(AppUser appUser, Long roomId, Long orderId, OrderAdapter orderAdapter) {
         Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
         orderById.setDescription(orderAdapter.getDescription());
         orderById.setPeriodBegin(orderAdapter.getPeriodBegin());
         orderById.setPeriodEnd(orderAdapter.getPeriodEnd());
-        String username = jwtTokenProvider.getUsername(token);
-        UserDetails userDetails = appUserService.loadUserByUsername(username);
-        orderById.setAppUser((AppUser) userDetails);
 
+//        Authentication auth = SecurityContextHolder.getContext().getAuthentication().getPrincipal().;
+
+        if (appUser.equals(orderById.getAppUser())) {
+            orderById.setAppUser(appUser);
+            return new OrderAdapter(checkingRequirementsOfOrderAndSaving(orderById));
+        } else if (appUser.getAppUserRole() == AppUserRole.ROLE_ADMIN) {
+            return new OrderAdapter(checkingRequirementsOfOrderAndSaving(orderById));
+        }
+
+        throw new AccessDeniedException("This User can not modify order");
         /*
         alternative of the code
         requires to set updatable false parameter all @column that should not be updated
@@ -106,7 +126,6 @@ public class OrderService {
             Order order = orderAdapter.toOrder();
             order.setId(orderId);
          */
-        return new OrderAdapter(checkingRequirementsOfOrderAndSaving(orderById));
     }
 
     /**
@@ -138,13 +157,18 @@ public class OrderService {
      * @throws OrderNotFoundException OrderNotFoundException if order by orderId and roomId is not found
      * @throws RoomNotFoundException  RoomNotFoundException if room is not found by provided id
      */
-    public OrderAdapter deleteOrderByRoomIdAndOrderId(Long roomId, Long orderId) {
+    public OrderAdapter deleteOrderByRoomIdAndOrderId(AppUser appUser, Long roomId, Long orderId) {
 
         Order orderById = orderRepository.findByIdAndRoom(orderId, roomService.getRoomById(roomId)).orElseThrow(OrderNotFoundException::new);
         log.debug("Order is :{}", orderById);
-        orderRepository.deleteById(orderId);
 
-        return new OrderAdapter(orderById);
+        if (appUser.equals(orderById.getAppUser()) || appUser.getAppUserRole() == AppUserRole.ROLE_ADMIN) {
+            orderRepository.deleteById(orderId);
+            return new OrderAdapter(orderById);
+        }
+
+        throw new AccessDeniedException("This User can not modify order");
+
     }
 
 
@@ -175,13 +199,30 @@ public class OrderService {
     }
 
     /**
+     * @param user   authenticated user
      * @param roomId provided room id
      * @return List of order
      * @throws RoomNotFoundException if room is not found by <code>roomId</code>
      */
-    public Page<Order> getOrdersByRoomId(Long roomId, Pageable pageable) {
+    public List<OrderAdapter> getCurrentOrdersByRoomId(AppUser user, Long roomId) {
         Room roomById = roomService.getRoomById(roomId);
+
         log.debug("Room By ID is :{}", roomById);
-        return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now(), pageable);
+        if (user.getAppUserRole() == AppUserRole.ROLE_ADMIN) {
+            return orderRepository.findAllByRoomAndPeriodEndGreaterThanEqual(roomById, LocalDate.now())
+                    .stream()
+                    .map(OrderAdapter::new)
+                    .collect(Collectors.toList());
+        }
+
+        throw new AccessDeniedException("This User can not modify order");
+    }
+
+    public List<OrderAdapter> findAllOrdersByUser(Long userId) {
+        AppUserAdapter userById = appUserService.findUserById(userId);
+        return orderRepository.findAllByAppUser(userById.toAppUser())
+                .stream()
+                .map(OrderAdapter::new)
+                .collect(Collectors.toList());
     }
 }
