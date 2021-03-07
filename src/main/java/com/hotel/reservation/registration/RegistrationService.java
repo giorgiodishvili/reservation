@@ -34,7 +34,7 @@ public class RegistrationService {
                         request.getLastName(),
                         request.getEmail(),
                         request.getPassword(),
-                        AppUserRole.USER
+                        AppUserRole.ROLE_USER
                 )
         );
         String link = "http://localhost:8080/api/registration/confirm?token=" + token;
