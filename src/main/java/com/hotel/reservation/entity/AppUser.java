@@ -22,7 +22,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "User")
+@Table(name = "app_user")
 public class AppUser implements UserDetails {
 
     @Id
@@ -44,13 +44,13 @@ public class AppUser implements UserDetails {
     @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @NotNull(message = "lastName mustn't be null")
     @Column(name = "last_name", nullable = false)
+    @NotNull(message = "lastName mustn't be null")
     @NotEmpty(message = "lastName mustn't be empty")
     private String lastName;
 
     @NotNull(message = "email mustn't be null")
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true,updatable = false)
     @NotEmpty(message = "email mustn't be empty")
     @Email
     private String email;
@@ -63,8 +63,10 @@ public class AppUser implements UserDetails {
     @Enumerated(EnumType.STRING)
     private AppUserRole appUserRole;
 
+    @Column(name = "locked", nullable = false)
     private Boolean locked = false;
 
+    @Column(name = "enabled", nullable = false)
     private Boolean enabled = false;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "appUser", fetch = FetchType.LAZY)
