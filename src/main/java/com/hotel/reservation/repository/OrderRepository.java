@@ -4,6 +4,7 @@ import com.hotel.reservation.entity.AppUser;
 import com.hotel.reservation.entity.Order;
 import com.hotel.reservation.entity.Room;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
 import java.time.LocalDate;
