@@ -17,7 +17,6 @@ import com.hotel.reservation.repository.OrderRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +59,6 @@ public class OrderService {
     }
 
     /**
-     *
      * @param user    authenticated user
      * @param orderId id of an order
      * @return Orders

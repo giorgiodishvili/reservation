@@ -50,7 +50,7 @@ public class AppUser implements UserDetails {
     private String lastName;
 
     @NotNull(message = "email mustn't be null")
-    @Column(name = "email", nullable = false, unique = true,updatable = false)
+    @Column(name = "email", nullable = false, unique = true, updatable = false)
     @NotEmpty(message = "email mustn't be empty")
     @Email
     private String email;

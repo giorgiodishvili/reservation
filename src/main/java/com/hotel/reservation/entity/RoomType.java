@@ -3,7 +3,9 @@ package com.hotel.reservation.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
@@ -16,6 +18,8 @@ import java.util.Set;
 @Entity
 @Table(name = "ROOM_TYPE")
 @ApiModel
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoomType {
 
     @Id
@@ -37,4 +41,8 @@ public class RoomType {
     @JsonIgnore
     private Set<Room> rooms;
 
+    public RoomType( @NotNull(message = "Label mustn't be null") @NotEmpty(message = "label mustn't be empty") String label, String description) {
+        this.label = label;
+        this.description = description;
+    }
 }

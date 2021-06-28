@@ -24,7 +24,7 @@ public class AppUserController {
     private final OrderService orderService;
 
     @GetMapping("{userId}")
-    public Page<OrderAdapter> findAllOrdersByUserId(@PathVariable("userId") Long userId, Pageable pageable){
-        return ListAdapter.createPageFromList(orderService.findAllOrdersByUser(userId),pageable);
+    public Page<OrderAdapter> findAllOrdersByUserId(@PathVariable("userId") Long userId, Pageable pageable) {
+        return ListAdapter.createPageFromList(orderService.findAllOrdersByUser(userId), pageable);
     }
 }

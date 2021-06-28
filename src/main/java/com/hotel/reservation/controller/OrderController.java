@@ -37,8 +37,8 @@ public class OrderController {
 
     @GetMapping("/{orderId}")
     @PreAuthorize(Authority.Order.READ)
-    public OrderAdapter getOrderById(@AuthenticationPrincipal AppUser user,@PathVariable("orderId") @Min(1) Long orderId) {
-        return orderService.getOrderById(user,orderId);
+    public OrderAdapter getOrderById(@AuthenticationPrincipal AppUser user, @PathVariable("orderId") @Min(1) Long orderId) {
+        return orderService.getOrderById(user, orderId);
     }
 
     @GetMapping("/checkOrder")

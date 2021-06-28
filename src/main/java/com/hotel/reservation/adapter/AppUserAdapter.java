@@ -1,6 +1,5 @@
 package com.hotel.reservation.adapter;
 
-import com.hotel.reservation.config.security.authority.AppUserRole;
 import com.hotel.reservation.entity.AppUser;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.security.core.GrantedAuthority;
@@ -28,42 +27,44 @@ public class AppUserAdapter {
      */
 
     @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-    public Long getId(){
+    public Long getId() {
         return appUser.getId();
     }
 
     @ApiModelProperty(accessMode = ApiModelProperty.AccessMode.READ_ONLY, readOnly = true)
-    public String getUsername(){
+    public String getUsername() {
         return appUser.getUsername();
     }
 
-    public String getFirstName(){
+    public String getFirstName() {
         return appUser.getFirstName();
     }
 
-    public Collection<? extends GrantedAuthority> getAuthorities(){
+    public Collection<? extends GrantedAuthority> getAuthorities() {
         return appUser.getAuthorities();
     }
 
-    public String getLastName(){
+    public String getLastName() {
         return appUser.getLastName();
     }
 
-    public boolean isAccountNonExpired(){
+    public boolean isAccountNonExpired() {
         return appUser.isAccountNonExpired();
     }
-    public boolean isEnabled(){
+
+    public boolean isEnabled() {
         return appUser.isEnabled();
     }
+
     /*
     Setters
      */
-    public void setFirstName(String firstName){
+    public void setFirstName(String firstName) {
         appUser.setFirstName(firstName);
     }
 
-    public void setLastName(String lastName){
-    appUser.setLastName(lastName);
+    public void setLastName(String lastName) {
+        appUser.setLastName(lastName);
     }
 
 }
